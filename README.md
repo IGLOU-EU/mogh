@@ -51,6 +51,22 @@ git clone https://github.com/IGLOU-EU/mogh.git ~/.git/templates/hooks
 git config --global init.templatedir ~/.git/templates
 ```
 
+### ♻️ Update
+To update it, just run the following command:
+```bash
+curl -sL https://raw.githubusercontent.com/IGLOU-EU/mogh/master/tools/update.sh | bash
+```
+That will globally made an `git pull` to the repository to update the templates.
+If the repository is not cloned yet, it returns an error.
+
+### 🪝 Update repository
+To update hooks in a repository, run the following command on it:
+```bash
+git init
+```
+According to the [documentation](https://git-scm.com/docs/git-init/en), this can update repository.
+> Create an empty Git repository **OR** reinitialize an existing one
+
 ## 📝 Configuration
 The configuration use the default git config file, so you can change it with 
 the git command `git config`. By default, the configuration is applied only to
