@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# return all cases to the loop
+range_cases() {
+    echo "$1" | jq -r '.[] | @base64'
+}
+
+# extract case data
+get_data() {
+    echo "$1" | base64 --decode | jq -r ".$2"
+}
+
+# process the result of the test
+then_case() {
+    if  [[ $2 == "$3" ]] && [[ $4 -eq $5 ]]; then
+        success "${FUNCNAME[1]}: Test '$1' passed"
+        return "$SUCCESS"
+    fi
+
+    failure "${FUNCNAME[1]}: Test '$1' failed"
+    warning "> Got: $2"
+    warning "> Expected: $3"
+    warning "> Error: $4"
+    warning "> Expected error: $5"
+    return "$FAILURE"
+}
