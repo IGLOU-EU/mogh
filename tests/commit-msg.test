@@ -1,0 +1,430 @@
+#!/bin/bash
+# shellcheck disable=SC2034,SC2155
+
+# define the relative root path
+readonly ROOT_PATH="$(dirname "$(readlink -f "$0")")"
+
+# source the helpers script
+source "$ROOT_PATH/helpers"
+
+# source the file we want to test
+source "$ROOT_PATH/../commit-msg"
+
+# test-format_checker test format_checker function
+test-format_checker() {
+    # set variables
+    local _name
+    local _line
+    local _expected
+    local _expected_error
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "empty line",
+            "line": "",
+            "expected": "",
+            "error": 1
+        },
+        {
+            "name": "empty line before header",
+            "line": "\nfeat: minsc try to speak with someone",
+            "expected": "",
+            "error": 1
+        },
+        {
+            "name": "no body",
+            "line": "feat: minsc try to speak with someone\n\nSigned-off-by: minsc <minsc@speak.try>",
+            "expected": "feat: minsc try to speak with someone\n\nSigned-off-by: minsc <minsc@speak.try>",
+            "error": 0
+        },
+        {
+            "name": "one body",
+            "line": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nSigned-off-by: minsc <minsc@speak.try>",
+            "expected": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nSigned-off-by: minsc <minsc@speak.try>",
+            "error": 0
+        },
+        {
+            "name": "multiple body",
+            "line": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nProtagonist: Oooooh kaaaay.\n\nSigned-off-by: minsc <minsc@speak.try>",
+            "expected": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nProtagonist: Oooooh kaaaay.\n\nSigned-off-by: minsc <minsc@speak.try>",
+            "error": 0
+        }
+    ]'
+
+    # diasable emoji
+    TYPE_TO_EMOJI=$FALSE
+    SIGNOFF_REQUIRED=$TRUE
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _line="$(get_data "$c" line)"
+        _expected="$(get_data "$c" expected)"
+        _expected_error="$(get_data "$c" error)"
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(format_checker "$_line" 2>/dev/null) && _result_status=$SUCCESS
+
+        # then process the result
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# test-format_header test format_header function
+test-format_header() {
+    # set variables
+    local _name
+    local _line
+    local _expected
+    local _expected_error
+    local _autofix
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "empty line",
+            "line": "",
+            "expected": "",
+            "error": 1,
+            "autofix": 1
+        },
+        {
+            "name": "multiple line header",
+            "line": "imoen\nis a\ntier A",
+            "expected": "",
+            "error": 1,
+            "autofix": 1
+        },
+        {
+            "name": "line is too long",
+            "line": "feat: imoen talks so much that his infinite dialogue is more than 80 charateres long and it s really boring",
+            "expected": "",
+            "error": 1,
+            "autofix": 1
+        },
+        {
+            "name": "line with upper case",
+            "line": "Perf: No, sarevok. Your men are already DEAD",
+            "expected": "perf: no, sarevok. your men are already dead",
+            "error": 0,
+            "autofix": 1
+        },
+        {
+            "name": "with a dot at the end",
+            "line": "test: a dot can be the brain if minsc.",
+            "expected": "test: a dot can be the brain if minsc",
+            "error": 0,
+            "autofix": 1
+        },
+        {
+            "name": "multiple spaces around colon",
+            "line": "build      :    boo, why are you doing this. stop it",
+            "expected": "build: boo, why are you doing this. stop it",
+            "error": 0,
+            "autofix": 1
+        },
+        {
+            "name": "multiple spaces around colon, upper case, dot at the end, without autofix",
+            "line": "Perf   :       No, sarevok. Your men are already DEAD.",
+            "expected": "",
+            "error": 1,
+            "autofix": 0
+        },
+        {
+            "name": "bad commit type",
+            "line": "sarevok: I am a bad type",
+            "expected": "",
+            "error": 1,
+            "autofix": 1
+        },
+        {
+            "name": "bad commit message and can t fix it",
+            "line": "fix(probably)): imoen can t be fixed",
+            "expected": "",
+            "error": 1,
+            "autofix": 1
+        },
+        {
+            "name": "everything is ok",
+            "line": "style: playing baldurs gate is not a right but a duty",
+            "expected": "style: playing baldurs gate is not a right but a duty",
+            "error": 0,
+            "autofix": 1
+        }
+    ]'
+
+    # diasable emoji
+    TYPE_TO_EMOJI=0
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _line="$(get_data "$c" line)"
+        _expected="$(get_data "$c" expected)"
+        _expected_error="$(get_data "$c" error)"
+        _autofix="$(get_data "$c" autofix)"
+
+        # set config
+        HEADER_AUTOFIX="$_autofix"
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(format_header "$_line" 2>/dev/null) && _result_status=$SUCCESS
+
+        # then process the result
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# test-format_footer test format_foorer function
+test-format_footer() {
+    # set debug
+    GIT_AUTHOR_NAME="Imoen"
+    GIT_AUTHOR_EMAIL="imoen@irenicus.fan"
+
+    # set variables
+    local _name
+    local _line
+    local _expected
+    local _expected_error
+    local _signoff
+    local _autofix
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "empty line",
+            "line": "",
+            "expected": "",
+            "error": 1,
+            "signoff": 0,
+            "autofix": 0
+        },
+        {
+            "name": "signoff not required",
+            "line": "BREAKING CHANGE: Ha, you re a queer fellow",
+            "expected": "BREAKING CHANGE: Ha, you re a queer fellow",
+            "error": 0,
+            "signoff": 0,
+            "autofix": 0
+        },
+        {
+            "name": "signoff required but not present",
+            "line": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken",
+            "expected": "",
+            "error": 1,
+            "signoff": 1,
+            "autofix": 0
+        },
+        {
+            "name": "signoff required but not present with autofix",
+            "line": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken",
+            "expected": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken\nSigned-off-by: Imoen <imoen@irenicus.fan>",
+            "error": 0,
+            "signoff": 1,
+            "autofix": 1
+        },
+        {
+            "name": "bad signoff format",
+            "line": "Signed-off-by: Imoen",
+            "expected": "",
+            "error": 1,
+            "signoff": 1,
+            "autofix": 0
+        },
+        {
+            "name": "bad signoff with autofix",
+            "line": "Signed-off-by: Imoen",
+            "expected": "",
+            "error": 1,
+            "signoff": 1,
+            "autofix": 1
+        },
+        {
+            "name": "everything is fine",
+            "line": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>",
+            "expected": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>",
+            "error": 0,
+            "signoff": 0,
+            "autofix": 0
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _line="$(get_data "$c" line)"
+        _expected="$(get_data "$c" expected)"
+        _expected_error="$(get_data "$c" error)"
+        _signoff="$(get_data "$c" signoff)"
+        _autofix="$(get_data "$c" autofix)"
+
+        # set config
+        SIGNOFF_REQUIRED="$_signoff"
+        SIGNOFF_AUTOFIX="$_autofix"
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(format_footer "$_line" 2>/dev/null) && _result_status=$SUCCESS
+
+        # then process the result
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# test-emoji_me test emoji_me function
+test-emoji_me() {
+    # set variables
+    local _name
+    local _line
+    local _expected
+    local _expected_error
+    local _emoji_cfg
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "empty line",
+            "line": "",
+            "expected": "",
+            "error": 1,
+            "emoji_cfg": 0
+        },
+        {
+            "name": "emoji_me disabled",
+            "line": "fix(imoen): i care not",
+            "expected": "fix(imoen): i care not",
+            "error": 0,
+            "emoji_cfg": 0
+        },
+
+        {
+            "name": "an emoji is present in the line",
+            "line": "feat: imoen is a tier A 🚀",
+            "expected": "✨ imoen is a tier A 🚀",
+            "error": 0,
+            "emoji_cfg": 1
+        },
+        {
+            "name": "emoji are already in place",
+            "line": "🐛 heya! its me, imoen",
+            "expected": "🐛 heya! its me, imoen",
+            "error": 0,
+            "emoji_cfg": 1
+        },
+        {
+            "name": "emoji are already in place with scope",
+            "line": "🐛 (imoen): heya! its me, imoen",
+            "expected": "🐛 (imoen): heya! its me, imoen",
+            "error": 0,
+            "emoji_cfg": 1
+        },
+        {
+            "name": "unsuported commit type",
+            "line": "imoen: i feel so cold",
+            "expected": "",
+            "error": 1,
+            "emoji_cfg": 1
+        },
+        {
+            "name": "emoji_me enabled",
+            "line": "feat: sometimes a warrior can only trust him hamster",
+            "expected": "✨ sometimes a warrior can only trust him hamster",
+            "error": 0,
+            "emoji_cfg": 1
+        },
+        {
+            "name": "emoji_me enabled with scope",
+            "line": "feat(minsc to boo): sometimes a warrior can only trust him hamster",
+            "expected": "✨ (minsc to boo): sometimes a warrior can only trust him hamster",
+            "error": 0,
+            "emoji_cfg": 1
+        },
+        {
+            "name": "emoji_me enabled with superposition",
+            "line": "perf: go for the eyes Bbo, go for the eyes!!!",
+            "expected": "⚡️ perf: go for the eyes Bbo, go for the eyes!!!",
+            "error": 0,
+            "emoji_cfg": 10
+        },
+        {
+            "name": "emoji_me enabled with superposition",
+            "line": "perf(minsc to boo): go for the eyes Bbo, go for the eyes!!!",
+            "expected": "⚡️ perf(minsc to boo): go for the eyes Bbo, go for the eyes!!!",
+            "error": 0,
+            "emoji_cfg": 10
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _line="$(get_data "$c" line)"
+        _expected="$(get_data "$c" expected)"
+        _expected_error="$(get_data "$c" error)"
+        _emoji_cfg="$(get_data "$c" emoji_cfg)"
+
+        # set emoji_me config
+        TYPE_TO_EMOJI="$_emoji_cfg"
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(emoji_me "$_line" 2>/dev/null) && _result_status=$SUCCESS
+
+        # then process the result
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# errors counter
+ERRORS=0
+
+# test-emoji_me
+test-format_checker || ERRORS=$((ERRORS + $?))
+test-format_header || ERRORS=$((ERRORS + $?))
+test-format_footer || ERRORS=$((ERRORS + $?))
+test-emoji_me || ERRORS=$((ERRORS + $?))
+
+# print the number of errors
+if [[ $ERRORS -eq 0 ]]; then
+    info "all tests are passed successfully"
+else
+    error "number of failled tests: $ERRORS"
+fi
+
+# exit with error code if there are errors
+exit $ERRORS
