@@ -11,7 +11,7 @@ readonly FAILURE=1
 
 # [HOOKS]
 ## HOOKS_ENABLED is a boolean value to enable or disable hooks
-HOOKS_ENABLED="$(git config --int --get hooks.enabled || echo $TRUE)"
+HOOKS_ENABLED="$(git config --int --get mogh.enabled || echo $TRUE)"
 
 # [GPG]
 ## GPG_REQUIRED is a flag that will force user to use git `-S, --gpg-sign`
