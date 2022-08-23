@@ -1,0 +1,317 @@
+#!/bin/bash
+
+# This script is used by the commit-msg hook to check the commit message
+# and to update the commit message if necessary with the correct format.
+# There is based to https://www.conventionalcommits.org/en/v1.0.0/
+#
+# He try to auto fix the following issues:
+# - Type, Scope and subject MUST be lowercase.
+# - Message MUST not end with a dot.
+# - Remove duplicate empty lines.
+# - Apply an emoji to the commit type if needed.
+#
+# Format:
+# <type>[optional scope]: <subject>
+# (max 80 chars, no upper case at start, no final dot)
+#
+# [optional description]
+#
+# [footer(s)]
+# (* && Signed-off-by: <name> <email>)
+
+# source config and common file
+source ./components/config
+source ./components/common
+
+## CM_TYPE is an array of commit message type,
+## TYPE_EXTRA can be used to add extra commit message type
+CM_TYPE=(
+    "build"
+    "chore"
+    "ci"
+    "docs"
+    "feat"
+    "fix"
+    "perf"
+    "refactor"
+    "style"
+    "test"
+    ${TYPE_EXTRA[*]}
+)
+
+## CM_EMOJI is an array of emoji type, there is mapped to the commit type
+## TYPE_EXTRA_EMOJI can be used to add extra emoji type
+CM_EMOJI=(
+    "🏗️"
+    "🙈"
+    "🚀"
+    "📝"
+    "✨"
+    "🐛"
+    "⚡️"
+    "♻️"
+    "💄"
+    "🧪"
+    ${TYPE_EXTRA_EMOJI[*]}
+)
+
+## CM_HEADER and CM_HEADER_EMOJI are the regex for commit message header
+BISF="$IFS"
+IFS="|"
+RGX_EMOJI="(?<emoji>${CM_EMOJI[*]})"
+CM_HEADER="^(?:${RGX_EMOJI} )?(?<type>${CM_TYPE[*]})(?:\((?<scope>[^)A-Z]+)\))?(?<breaking>!)?:\s(?<subject>[^A-Z].+[^.])$"
+CM_HEADER_EMOJI="^${RGX_EMOJI}(?:\((?<scope>[^)A-Z]+)\))?(?<breaking>!)?:?\s(?<subject>[^A-Z].+[^.])$"
+IFS="$BISF"
+unset BISF
+
+## CM_FOOTER is the regex for commit message footer
+## The footer MUST be signed
+CM_FOOTER="(?:[^ :]+:\s.+\n)*(?:Signed-off-by:\s(?<name>.+)\s<(?<email>[^@]+@.+)>)$"
+
+## format_checker is the function to check and fix the commit message format
+format_checker() {
+    local _section=1
+    local _empty_line=$FALSE
+
+    local _content=()
+    while read -r line; do 
+        if [[ $line == "" ]]; then
+            # two empty lines are not allowed we can safely ignore this line
+            if [[ $_empty_line -eq $TRUE ]]; then
+                continue
+            fi
+
+            # previous section can't be empty
+            if [[ ${_content[$_section]} == "" ]]; then
+                error "A section can't be empty, probably a missing header"
+                return $FAILURE
+            fi
+
+            # an empty line is expect after a section
+            _section=$((_section+1))
+            _empty_line=$TRUE
+
+            continue
+        fi
+
+        # reset empty line flag
+        _empty_line=$FALSE
+
+        # save section content
+        if [[ ${_content[$_section]} == "" ]]; then
+            _content[$_section]="$line"
+        else
+            _content[$_section]+=$'\n'"$line"
+        fi
+
+        continue
+    done <<< "$1"
+
+    # check and fix the header format
+    if ! _content[1]=$(format_header "${_content[1]}"); then
+        return 1
+    fi
+
+    # check the footer format and required signature
+    if ! _content[$_section]=$(format_footer "${_content[$_section]}"); then
+        return 1
+    fi
+
+    # return the result with an empty line between each sections
+    for id in "${!_content[@]}"; do
+        if [[ $id -ne 1 ]]; then
+            echo ""
+        fi
+
+        echo "${_content[$id]}"
+    done 
+
+}
+
+## format_header is the function to check and fix the commit message header format
+format_header() {
+    local _error=$FALSE
+
+    # check if we have the header in argument
+    local _line
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
+        _line=$1
+    else
+        return $FAILURE
+    fi
+
+    # check if there is multiple line
+    if [[ $_line == *$'\n'* ]]; then
+        error "Multiple line are not allowed in the header"
+        return $FAILURE
+    fi
+
+    # check the header length
+    if [[ ${#_line} -gt 80 ]]; then
+        error "The header is too long"
+        return $FAILURE
+    fi
+
+    # check the header format CM_HEADER to CM_HEADER_EMOJI
+    (
+        grep -sPq "${CM_HEADER}" <<< "$_line" ||
+        grep -sPq "${CM_HEADER_EMOJI}" <<< "$_line"
+    ) || _error=$TRUE
+
+    # try to auto fix the header if needed
+    if [[ $_error -eq $TRUE ]] && [[ $HEADER_AUTOFIX -eq $TRUE ]]; then
+        # reset error flag
+        _error=$FALSE
+
+        # Convert the header to lowercase
+        _line=$(tr '[:upper:]' '[:lower:]' <<< "$_line") || {
+            error "Failed to convert the header to lowercase"
+            return $FAILURE
+        }
+
+        # Remove dot at the end of the header if any
+        if [[ $_line == *"." ]]; then
+            _line=${_line::-1}
+        fi
+
+        # try to fix bad colon 
+        _line=$(sed -E 's/^([^:     ]+)\s*:\s*/\1: /' <<< "$_line") || {
+            error "Failed to remove bad semicolon"
+            return $FAILURE
+        }
+
+        # check the format again
+        (grep -sPq "${CM_HEADER}" <<< "$_line" || grep -sPq "${CM_HEADER_EMOJI}" <<< "$_line") || {
+            error "Invalid header format can't be fixed\n$_line"
+            return $FAILURE
+        }
+    fi
+
+    if [[ $_error -eq $TRUE ]]; then
+        error "Invalid header format\n$_line"
+        return $FAILURE
+    fi
+
+    # emoji 
+    _line="$(emoji_me "$_line")" || {
+        error "Failed to apply emoji"
+        return $FAILURE
+    }
+
+    # return the result
+    echo "$_line"
+    return $SUCCESS
+}
+
+## format_footer is the function to check and fix the commit message footer
+format_footer() {
+    # check if we have the footer in argument
+    local _line
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
+        _line=$1
+    else
+        return $FAILURE
+    fi
+
+    # if signoff is required
+    if [[ $SIGNOFF_REQUIRED -eq $TRUE ]]; then
+        local _error=$FALSE
+
+        # check the footer format
+        if ! (grep -sPq "${CM_FOOTER}" <<< "$_line"); then
+            _error=$TRUE
+        fi
+
+        # autofix if needed
+        if  [[ $_error -eq $TRUE ]] &&
+            if [[ -z $GIT_AUTHOR_EMAIL ]] || [[ -z $GIT_AUTHOR_NAME ]]; then
+                error "Can't autofix the footer, missing author information"
+                return $FAILURE
+            fi
+
+            [[ $_line != *"Signed-off-by"* ]] &&
+            [[ $SIGNOFF_AUTOFIX -eq $TRUE ]]; then
+            _error=$FALSE
+            _line+=$'\n'"Signed-off-by: $GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
+        fi
+
+        if [[ $_error -eq $TRUE ]]; then
+            error "Invalid footer format Signed-off-by is missing or badly formatted"
+            return $FAILURE
+        fi
+    fi
+
+    # return the result
+    echo "$_line"
+    return $SUCCESS
+}
+
+## emoji_me is a function to apply emoji to a commit message
+emoji_me() {
+    # check if we have the header in argument
+    local _line
+    if [[ $# -eq 1 ]] && [[ -n $1 ]] && [[ -n $1 ]]; then
+        _line=$1
+    else
+        return $FAILURE
+    fi
+
+    # check if emoji_me is disable or if line already start with an emoji
+    if  [[ $TYPE_TO_EMOJI -eq $FALSE ]] || 
+        (grep -sPq "^${RGX_EMOJI}" <<< "$_line")
+    then
+        echo "$_line"
+        return $SUCCESS
+    fi
+
+    # find the commit type in CM_TYPE array
+    local _type_id=-1
+    for i in "${!CM_TYPE[@]}"; do
+        if (grep -sPq "^${CM_TYPE[$i]}" <<< "$_line"); then
+            _type_id="$i"
+            break
+        fi
+    done
+
+    if [[ _type_id -eq -1 ]]; then
+        error "No allowed commit type found in the commit message: $_line"
+        return $FAILURE
+    fi
+
+    # check if an emoji is available at this id
+    if [[ ${CM_EMOJI[$_type_id]} == "" ]]; then
+        error "No emoji found for this commit type: ${CM_TYPE[$_type_id]}"
+        return $FAILURE
+    fi
+
+    # apply the emoji
+    case $TYPE_TO_EMOJI in
+        "$TRUE")
+            echo "$_line" | sed -E "s/${CM_TYPE[$_type_id]}:? ?/${CM_EMOJI[$_type_id]} /"
+            ;;
+        "$SUPERPOSITION")
+            echo "${CM_EMOJI[$_type_id]} ${_line}"
+            ;;
+        *)
+            return $FAILURE
+            ;;
+    esac
+}
+
+## MAIN
+# do not execute if this script is sourced required for unit testing
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # check if arg is a regular file
+    if [[ ! -f $1 ]]; then
+        error "Argument 1 is not a regular file"
+        exit $FAILURE
+    fi
+
+    # process the file
+    _result="$(format_checker "$(<"$1")")" && {
+        echo "$_result" > "$1"
+        exit $SUCCESS
+    }
+
+    exit $FAILURE
+fi
