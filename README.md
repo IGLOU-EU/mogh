@@ -4,10 +4,23 @@ _Configurable UTF-8 git hooks templates without bullshit_
 [![License: GPL 3.0](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![License: GPL 3.0](https://img.shields.io/badge/License-GPL_3.0_or_later-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 
+## 🧠 Systems supported
+- [x] Gnu/Linux
+- [ ] Windows
+- [ ] macOS
+- [ ] BSD
+
 ## 🧪 Features
-- Check and Auto-fix commit message format
-- Partial emoji support (can be disabled)
-- Colored Error and Success message output
+- [x] Can be configured with `git config` globally or locally
+- [x] Colored Error and Success message output
+- [x] Unit testing for each hook
+- [x] emoji type support (can be disabled)
+- [x] Check and Auto-fix commit message format
+- [x] Check and Auto signoff when missing if required
+- [ ] Check and Auto pgp singing when missing if required
+- [ ] Avoid duplicate commits
+- [ ] Avoid to commit binary files with auto or interactive fix
+- [ ] Avoid to commit large files with auto or interactive fix
 
 ## 📦 Dependencies
 To work properly, these scripts don't require any exta dumb tools like npm,
