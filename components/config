@@ -1,0 +1,46 @@
+#!/bin/bash
+# shellcheck disable=SC2034,SC2086,SC2207
+
+# [READONLY]
+readonly TRUE=1
+readonly FALSE=0
+readonly SUPERPOSITION=10
+
+readonly SUCCESS=0
+readonly FAILURE=1
+
+# [HOOKS]
+## HOOKS_ENABLED is a boolean value to enable or disable hooks
+HOOKS_ENABLED="$(git config --int --get hooks.enabled || echo $TRUE)"
+
+# [GPG]
+## GPG_REQUIRED is a flag that will force user to use git `-S, --gpg-sign`
+GPG_REQUIRED="$(git config --int --get mogh.gpg.required || echo $TRUE)"
+
+## GPG_AUTOFIX is a flag that will try to automatically fix the gpg signature
+GPG_AUTOFIX="$(git config --int --get mogh.gpg.autofix || echo $TRUE)"
+
+# [HEADER]
+## HEADER_AUTOFIX is a flag that will try to automatically fix the header
+HEADER_AUTOFIX="$(git config --int --get mogh.header.autofix || echo $TRUE)"
+
+# [TYPES]
+# TYPE_EXTRA is an array to add extra commit type
+# by default all commit type from conventionalcommits.org v1 are available
+TYPE_EXTRA=($(git config --get-all mogh.types.extra))
+
+# TYPE_TO_EMOJI is a flag to enable or disable the emoji
+# 0: disable; 1: enable; 10: enable but keep the type
+TYPE_TO_EMOJI="$(git config --int --get mogh.types.emoji || echo $SUPERPOSITION)"
+
+# TYPE_EXTRA_EMOJI is an array to add extra emoji commit type
+# to mapping the commit type to emoji, the position id in the array is used
+# if a commit type id is not available in this array we not apply the emoji
+TYPE_EXTRA_EMOJI=($(git config --get-all mogh.types.extra-emoji))
+
+# [SIGNOFF]
+## SIGNOFF_REQUIRED is a flag that will force user to use git `-s, --signoff`
+SIGNOFF_REQUIRED="$(git config --int --get mogh.signoff.required || echo $TRUE)"
+
+## SIGNOFF_AUTOFIX is a flag that will try to automatically fix the signoff
+SIGNOFF_AUTOFIX="$(git config --int --get mogh.signoff.autofix || echo $TRUE)"

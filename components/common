@@ -1,0 +1,55 @@
+#!/bin/bash
+# shellcheck disable=SC2086
+
+# if hooks are disabled then exit with success
+if [[ $HOOKS_ENABLED -eq $FALSE ]]; then
+    echo "Hooks are disabled"
+    exit 0
+fi
+
+# set colors variables
+if tput colors >/dev/null 2>&1; then
+    COLOR_RESET="\e[0m"
+    COLOR_SUCCESS="\e[32m"
+    COLOR_WARNING="\e[33m"
+    COLOR_ERROR="\e[31m"
+fi
+
+# Output message are every time sent to stderr
+# to avoid mess up the stdout
+
+# success message
+success() {
+    echo -e "${COLOR_SUCCESS}[SUCCESS]${COLOR_RESET} $1" >&2
+    return $SUCCESS
+}
+
+# failure message
+failure() {
+    echo -e "${COLOR_ERROR}[FAILURE]${COLOR_RESET} $1" >&2
+    return $FAILURE
+}
+
+# info message
+info() {
+    echo -e "${COLOR_SUCCESS}[INFO]${COLOR_RESET} $1" >&2
+    return $SUCCESS
+}
+
+# warning message
+warning() {
+    echo -e "${COLOR_WARNING}[WARNING]${COLOR_RESET} $1" >&2
+    return $SUCCESS
+}
+
+# error message
+error() {
+    echo -e "${COLOR_ERROR}[ERROR]${COLOR_RESET} $1" >&2
+    return $FAILURE
+}
+
+# fatal with error message
+fatal() {
+    error "$1"
+    exit $FAILURE
+}
