@@ -4,15 +4,9 @@
 # and to update the commit message if necessary with the correct format.
 # There is based to https://www.conventionalcommits.org/en/v1.0.0/
 #
-# He try to auto fix the following issues:
-# - Type, Scope and subject MUST be lowercase.
-# - Message MUST not end with a dot.
-# - Remove duplicate empty lines.
-# - Apply an emoji to the commit type if needed.
-#
 # Format:
 # <type>[optional scope]: <subject>
-# (max 80 chars, no upper case at start, no final dot)
+# (max 80 chars, no upper case, no final dot)
 #
 # [optional description]
 #
@@ -23,6 +17,7 @@
 source ./components/config
 source ./components/common
 
+# shellcheck disable=SC2206
 ## CM_TYPE is an array of commit message type,
 ## TYPE_EXTRA can be used to add extra commit message type
 CM_TYPE=(
@@ -39,6 +34,7 @@ CM_TYPE=(
     ${TYPE_EXTRA[*]}
 )
 
+# shellcheck disable=SC2206
 ## CM_EMOJI is an array of emoji type, there is mapped to the commit type
 ## TYPE_EXTRA_EMOJI can be used to add extra emoji type
 CM_EMOJI=(
