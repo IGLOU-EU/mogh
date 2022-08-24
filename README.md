@@ -51,7 +51,7 @@ git clone https://github.com/IGLOU-EU/mogh.git ~/.git/templates/hooks
 git config --global init.templatedir ~/.git/templates
 ```
 
-### ♻️ Update
+### Update ♻️
 To update it, just run the following command:
 ```bash
 curl -sL https://raw.githubusercontent.com/IGLOU-EU/mogh/master/tools/update.sh | bash
@@ -59,19 +59,21 @@ curl -sL https://raw.githubusercontent.com/IGLOU-EU/mogh/master/tools/update.sh 
 That will globally made an `git pull` to the repository to update the templates.
 If the repository is not cloned yet, it returns an error.
 
-### 🪝 Update repository
+### Update repository 🪝
 To update hooks in a repository, run the following command on it:
 ```bash
 git init
 ```
-According to the [documentation](https://git-scm.com/docs/git-init/en), this can update repository.
+According to the [documentation](https://git-scm.com/docs/git-init/en),
+this can update repository.
 > Create an empty Git repository **OR** reinitialize an existing one
 
 ## 📝 Configuration
 The configuration use the default git config file, so you can change it with 
 the git command `git config`. By default, the configuration is applied only to
 the current git repository, but you can apply it globally with the `--global`
-flag option.
+flag option. For more information, see the
+[documentation](https://git-scm.com/docs/git-config).
 
 Local configuration overrides global configuration, except for lists, like
 `mogh.types.extra` and `mogh.types.extra-emoji`. There use "all values for a
@@ -96,10 +98,76 @@ git config mogh.types.emoji 1
 
 Take your `git config` and fill it to your needs 🎉
 
-### [mogh] Section
+### TOML config 📋
+This is the `git config` representation of how the default MOGH configuration
+is applied for hooks.
 ```toml
 [mogh]
+	enabled = 1
+[mogh "gpg"]
+	required = 1
+	autofix = 1
+[mogh "header"]
+	autofix = 1
+[mogh "types"]
+	emoji = 10
+[mogh "signoff"]
+	required = 1
+	autofix = 1
 ```
+
+### Detailed config 📑
+#### mogh.enabled
+To enable or disable MOGH hooks.    
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.gpg.required
+To enable or disable GPG signing requirement.    
+This flag will force user to use git `-S, --gpg-sign`
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.gpg.autofix
+To enable or disable automatic GPG signature fixing.    
+This flag will try to automatically apply the gpg signature to the commit.
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.header.autofix
+To enable or disable automatic header fixing.    
+This flag will try to automatically fix the header of the commit.
+According to the [conventionalcommits.org v1](https://www.conventionalcommits.org/en/v1.0.0/).
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.types.extra
+To add extra commit type to the list of supported types.    
+By default, all commit type from conventionalcommits.org v1 are available.
+> Default is an empty list.    
+> Can be added with `git config --global mogh.types.extra "poop"`
+
+#### mogh.types.emoji
+To enable or disable the emoji type support.    
+The idea is to use the emoji type instead of the type name.
+This is largely inspired by [gitmoji.dev](https://gitmoji.dev/).
+> Can be set to 0, 1, 10. Default is 10.    
+> 0: disable; 1: enable; 10: enable but keep the type name.
+
+#### mogh.types.extra-emoji
+To add extra emoji commit type to the list of supported types.    
+In case you have added extra commit type to the list and whant corresponding
+emoji, you need to add them here. Warning, the position id in the array is
+used to map the commit type to emoji, so you need to keep the same order.
+> Default is an empty list.    
+> Can be added with `git config --global mogh.types.extra-emoji "💩"`
+
+#### mogh.signoff.required
+To enable or disable the signoff requirement.    
+This flag will force user to use git `-s, --signoff`
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.signoff.autofix
+To enable or disable automatic signoff fixing.    
+This flag will try to automatically add the signoff to the commit.
+It use git variable `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL` to generate it.
+> Can be set to 0 or 1. Default is 1.
 
 ## 💻 Usage
 These scripts are automatically used by Git according to the actions taken,
