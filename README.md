@@ -21,6 +21,12 @@ _Configurable UTF-8 git hooks templates without bullshit_
 - [ ] Avoid duplicate commits
 - [ ] Avoid to commit binary files with auto or interactive fix
 - [ ] Avoid to commit large files with auto or interactive fix
+- [ ] Support of DNCT (Do Not Commit This) tags in files
+- [ ] Prevent the commit of the mac ds_store ...
+- [ ] Prevent pushing to remote branches that is not up-to-date with local branches
+- [ ] Prevent pushing commit with WIP (Work in Progress) tag
+- [ ] Require a .gitignore file to be present in the root of the repository
+- [ ] Emit a warning if potential sensitive information is found in a file
 
 ## 📦 Dependencies
 To work properly, these scripts don't require any exta dumb tools like npm,
