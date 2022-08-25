@@ -246,7 +246,7 @@ format_footer() {
 emoji_me() {
     # check if we have the header in argument
     local _line
-    if [[ $# -eq 1 ]] && [[ -n $1 ]] && [[ -n $1 ]]; then
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
         _line=$1
     else
         return $FAILURE
