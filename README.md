@@ -28,6 +28,18 @@ _Configurable UTF-8 git hooks templates without bullshit_
 - [x] Require a .gitignore file to be present in the root of the repository
 - [ ] Emit a warning if potential sensitive information is found in a file
 
+## 💻 Usage
+These scripts are automatically used by Git according to the actions taken,
+like every `githooks` and comforming to the [githooks manual page](https://mirrors.edge.kernel.org/pub/software/scm/git/docs/githooks.html).
+
+You can disable MOGH hooks for a specific project with the dedicated option.
+Like this:
+```bash
+git config mogh.enabled 0
+```
+
+Or you can skip it one with the git `--no-verify` flag for push actions.
+
 ## 📦 Dependencies
 To work properly, these scripts don't require any exta dumb tools like npm,
 python or other crap. Requirements are probably by default on your system.
@@ -221,15 +233,3 @@ To enable or disable automatic signoff fixing.
 This flag will try to automatically add the signoff to the commit.
 It use git variable `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL` to generate it.
 > Can be set to 0 or 1. Default is 1.
-
-## 💻 Usage
-These scripts are automatically used by Git according to the actions taken,
-like every `githooks` and comforming to the [githooks manual page](https://mirrors.edge.kernel.org/pub/software/scm/git/docs/githooks.html).
-
-You can disable MOGH hooks for a specific project with the dedicated option.
-Like this:
-```bash
-git config mogh.enabled 0
-```
-
-Or you can skip it one with the git `--no-verify` flag for push actions.
