@@ -19,13 +19,13 @@ _Configurable UTF-8 git hooks templates without bullshit_
 - [x] Check and Auto signoff when missing if required
 - [ ] Check and Auto pgp singing when missing if required
 - [ ] Avoid duplicate commits
-- [ ] Avoid to commit binary files with auto or interactive fix
-- [ ] Avoid to commit large files with auto or interactive fix
-- [ ] Support of DNCT (Do Not Commit This) tags in files
-- [ ] Prevent the commit of the mac ds_store ...
+- [x] Avoid to commit binary files with auto or interactive fix
+- [x] Avoid to commit large files with auto or interactive fix
+- [x] Support of DNCT (Do Not Commit This) tags in files
+- [x] Prevent the commit of the mac ds_store ...
 - [ ] Prevent pushing to remote branches that is not up-to-date with local branches
 - [ ] Prevent pushing commit with WIP (Work in Progress) tag
-- [ ] Require a .gitignore file to be present in the root of the repository
+- [x] Require a .gitignore file to be present in the root of the repository
 - [ ] Emit a warning if potential sensitive information is found in a file
 
 ## 📦 Dependencies
@@ -33,8 +33,11 @@ To work properly, these scripts don't require any exta dumb tools like npm,
 python or other crap. Requirements are probably by default on your system.
 
 - `git` of course ...
+- `printf` to format a string
 - `bash` this is an sh-compatible shell
 - `grep` searching plain-text data sets for lines
+- `file` checking file type
+- `stat` checking file size
 - `sed` parses and transforms text
 - `tr` operation of replacing or removing specific characters
 - `jq` (only for unit testing) JSON processor
@@ -110,6 +113,15 @@ is applied for hooks.
 ```toml
 [mogh]
 	enabled = 1
+    gitignore = 1
+[mogh "dnct"]
+	enabled = 1
+	regex = \\[DNCT\\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS
+[mogh "files"]
+	ignoreDsStore = 1
+	ignoreBinary = 10
+	sizeMax = 1024
+	sizeAutofix = 10
 [mogh "gpg"]
 	required = 1
 	autofix = 1
@@ -126,6 +138,41 @@ is applied for hooks.
 #### mogh.enabled
 To enable or disable MOGH hooks.    
 > Can be set to 0 or 1. Default is 1.
+
+#### mogh.gitignore
+To enable or disable the gitignore requirement.
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.dnct.enabled
+To enable or disable the dnct tag checker.
+This tag DO NOT COMMIT THIS is used to prevent the commit of sensitive data.
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.dnct.regex
+To set the dnct tag regex.
+This is the regex to match the dnct tag.
+> Default is `\[DNCT\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS`
+
+#### mogh.files.ignoreDsStore
+To enable or disable the ds_store ignore.
+When you work with mac guys ...
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.files.ignoreBinary
+To enable or disable the binary file ignore.
+This flag is used to prevent the commit of executable binaries.
+> Can be set to 0, 1, 10. Default is 10.    
+> 0: keep it; 1: remove from commit; 10: interactive fix.
+
+#### mogh.files.sizeMax
+To set the maximum file size to be committed.
+This flag is used to prevent the commit of large files.
+> Can be set to a KB value. Default is 1024.
+
+#### mogh.files.sizeAutofix
+To enable or disable the file size autofix.
+> Can be set to 0, 1, 10. Default is 10.    
+> 0: keep it; 1: remove from commit; 10: interactive fix.
 
 #### mogh.gpg.required
 To enable or disable GPG signing requirement.    

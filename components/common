@@ -20,36 +20,91 @@ fi
 
 # success message
 success() {
-    echo -e "${COLOR_SUCCESS}[SUCCESS]${COLOR_RESET} $1" >&2
+    echo -e "${COLOR_SUCCESS}[SUCCESS]${COLOR_RESET} $*" >&2
     return $SUCCESS
 }
 
 # failure message
 failure() {
-    echo -e "${COLOR_ERROR}[FAILURE]${COLOR_RESET} $1" >&2
+    echo -e "${COLOR_ERROR}[FAILURE]${COLOR_RESET} $*" >&2
     return $FAILURE
 }
 
 # info message
 info() {
-    echo -e "${COLOR_SUCCESS}[INFO]${COLOR_RESET} $1" >&2
+    echo -e "${COLOR_SUCCESS}[INFO]${COLOR_RESET} $*" >&2
     return $SUCCESS
 }
 
 # warning message
 warning() {
-    echo -e "${COLOR_WARNING}[WARNING]${COLOR_RESET} $1" >&2
+    echo -e "${COLOR_WARNING}[WARNING]${COLOR_RESET} $*" >&2
     return $SUCCESS
 }
 
 # error message
 error() {
-    echo -e "${COLOR_ERROR}[ERROR]${COLOR_RESET} $1" >&2
+    echo -e "${COLOR_ERROR}[ERROR]${COLOR_RESET} $*" >&2
     return $FAILURE
 }
 
 # fatal with error message
 fatal() {
-    error "$1"
+    error "$*"
     exit $FAILURE
+}
+
+# git_uncache is a function to uncache a file from the index
+git_uncache() {
+    local _file
+
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
+        _file=$1
+    else
+        return $FAILURE
+    fi
+
+    if ! git rm --quiet --cached "$_file"; then
+        error "Failed to uncache $_file"
+        return $FAILURE
+    fi
+
+    warning "Removed cached file: $_file.\n" \
+        "Please consider to add it to .gitignore"
+
+    return $SUCCESS
+}
+
+# interactive_remove is a function to take an action on a file
+interactive_remove() {
+    local _answer
+
+    if [[ $# -ne 2 ]]; then
+        return $FAILURE
+    fi
+
+    local _type="$1"
+    local _file="$2"
+
+    warning "$_type file detected in commit"                        \
+        "\n-> $_file"                                               \
+        "\n\n   What do you want to do with it?"                \
+        "\n\n   c) Continue to commit without change (default)" \
+        "\n   r) Remove the file from the commit"               \
+        "\n   a) Abort to fix it manually"                      \
+        "\n\n:: Proceed? [c/r/a] "
+    
+    read -r _answer
+    case $_answer in
+        [aA])
+            fatal "Aborted by user"
+            ;;
+        [rR])
+            git_uncache "$_file" || return $FAILURE
+            ;;
+        [cC] | *)
+            ;;
+    esac
+
+    return $SUCCESS
 }

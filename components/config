@@ -13,6 +13,9 @@ readonly FAILURE=1
 ## HOOKS_ENABLED is a boolean value to enable or disable hooks
 HOOKS_ENABLED="$(git config --int --get mogh.enabled || echo $TRUE)"
 
+## GITIGNORE_REQUIRED is a boolean value to enable or disable gitignore
+GITIGNORE_REQUIRED="$(git config --int --get mogh.gitignore || echo $TRUE)"
+
 # [GPG]
 ## GPG_REQUIRED is a flag that will force user to use git `-S, --gpg-sign`
 GPG_REQUIRED="$(git config --int --get mogh.gpg.required || echo $TRUE)"
@@ -44,3 +47,27 @@ SIGNOFF_REQUIRED="$(git config --int --get mogh.signoff.required || echo $TRUE)"
 
 ## SIGNOFF_AUTOFIX is a flag that will try to automatically fix the signoff
 SIGNOFF_AUTOFIX="$(git config --int --get mogh.signoff.autofix || echo $TRUE)"
+
+# [DNCT]
+## DNCT_SUPPORT is a boolean value to enable or disable DNCT support
+DNCT_SUPPORT="$(git config --int --get mogh.dnct.enabled || echo $TRUE)"
+
+## DNCT_REGEX is a regex to match DNCT in commit files
+DNCT_REGEX="$(git config --get mogh.dnct.regex ||
+echo '\[DNCT\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS')"
+
+# [FILES]
+## IGNORE_DSSTORE is a flag to ignore .DS_Store files
+IGNORE_DSSTORE="$(git config --int --get mogh.files.ignoreDsStore || echo $TRUE)"
+
+## IGNORE_BINARY is a flag to ignore executable binary files
+# 0: disable; 1: enable; 10: manual decision
+IGNORE_BINARY="$(git config --int --get mogh.files.ignoreBinary || echo $SUPERPOSITION)"
+
+## MAX_FILE_SIZE is a maximum size for a file 
+## size in KB (1024 bytes), 0 to disable and by default is 1024 (1MB)
+MAX_FILE_SIZE="$(git config --int --get mogh.files.sizeMax || echo 1024)"
+
+## FILE_SIZE_AUTOFIX is a flag to automatically fix files with size > MAX_FILE_SIZE
+# 0: disable; 1: enable; 10: manual decision
+FILE_SIZE_AUTOFIX="$(git config --int --get mogh.files.sizeAutofix || echo $SUPERPOSITION)"

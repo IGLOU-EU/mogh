@@ -1,0 +1,170 @@
+#!/bin/bash
+
+# This script is used by the pre-commit hook to check the commited
+# files and auto or manual fixit it if needed.
+
+# source config and common file
+source ./components/config
+source ./components/common
+
+## EXEC_BIN is an array of executable binary format
+EXEC_BIN=(
+    "COFF"
+    "ECOFF"
+    "XCOFF"
+    "XCOFF32"
+    "XCOFF64"
+    "ELF"
+    "Mach-O"
+    "PEF"
+    "CMD"
+    "MS-DOS"
+    "PE"
+    "PE32+"
+)
+
+## check_dnct is a function to check if a DNCT tag is spoted in the commit
+check_dnct() {
+    local _spoted
+
+    if [[ $DNCT_SUPPORT -eq $FALSE ]]; then
+        return $SUCCESS
+    fi
+
+    _spoted="$(git diff --cached --name-only --diff-filter=AM -p -G "$DNCT_REGEX")"
+    if [[ -n $_spoted ]]; then
+        error "DNCT tag are spoted in commit, see files below to fix it:"
+        
+        for _file in $_spoted; do
+            warning "-> $_file"
+        done
+
+        return $FAILURE
+    fi
+
+    return $SUCCESS
+}
+
+## check_dsstore is a function to check if a DSStore file is spoted in commit
+check_dsstore() {
+    local _file
+
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
+        _file=$1
+    else
+        return $FAILURE
+    fi
+
+    if [[ $IGNORE_DSSTORE -eq $TRUE ]] && [[ $_file == *"/.ds_store" ]]; then
+        git_uncache "$_file"
+        return $FAILURE
+    fi
+
+    return $SUCCESS
+}
+
+## check_binary is a function to check if a binary file is spoted in commit
+check_binary() {
+    local _type
+    local _file
+
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
+        _file=$1
+    else
+        return $FAILURE
+    fi
+
+    if [[ $IGNORE_BINARY -eq $TRUE ]]; then
+        return $SUCCESS
+    fi
+
+    if ! _type="$(file -Nb "$_file" | grep -f <(printf "%s\n" "${EXEC_BIN[*]}"))"; then
+        return $SUCCESS
+    fi
+
+    case $IGNORE_BINARY in
+        "$TRUE")
+            git_uncache "$_file"
+            ;;
+        "$SUPERPOSITION")
+            interactive_remove "Executable binary" "$_file"
+            ;;
+        *)
+            return $SUCCESS
+            ;;
+    esac
+
+    return $FAILURE
+}
+
+## check_size is a function to check if file size is greater than the limit
+check_size() {
+    local _size
+    local _file
+
+    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
+        _file=$1
+    else
+        return $FAILURE
+    fi
+
+    if ! _size=$(stat -c%s "$_file" 2>/dev/null); then
+        return $FAILURE
+    fi
+    _size=$((_size / 1024))
+
+    if [[ $MAX_FILE_SIZE -lt 1 ]] || [[ $_size -lt $MAX_FILE_SIZE ]]; then
+        return $SUCCESS
+    fi
+
+    case $FILE_SIZE_AUTOFIX in
+        "$TRUE")
+            git_uncache "$_file"
+            ;;
+        "$SUPERPOSITION")
+            interactive_remove \
+                "${_size}KB exceeds limit of ${MAX_FILE_SIZE}KB for a" "$_file"
+            ;;
+        *)
+            return $SUCCESS
+            ;;
+    esac
+
+    return $FAILURE
+}
+
+## MAIN
+# do not execute if this script is sourced required for unit testing
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # check if a .gitignore exists
+    if [[ $GITIGNORE_REQUIRED -eq $TRUE ]] && [[ ! -f .gitignore ]]; then
+        fatal 'To prevent unwanted files from being commited, a .gitignore'\
+              'file is required.\n> For disabling this check in the current'\
+              'repository, you can run the following command:\n>'\
+              'git config mogh.gitignore 0'
+    fi
+
+    # check if a modified or added file is tagged with DNCT
+    if ! check_dnct; then
+        exit $FAILURE
+    fi
+
+    for _file in $(git diff --cached --name-only --diff-filter=ATM -p); do
+        # check .ds_store file
+        if ! check_dsstore "$_file" ; then
+            continue
+        fi
+
+        # check binary file
+        if ! check_binary "$_file" ; then
+            continue
+        fi
+
+        # check file size
+        if ! check_size "$_file" ; then
+            continue
+        fi
+    done
+fi
+
+exit $SUCCESS

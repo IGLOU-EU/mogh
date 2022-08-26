@@ -1,0 +1,31 @@
+#!/bin/bash
+# shellcheck disable=SC2034,SC2155
+
+# define the relative root path
+readonly ROOT_PATH="$(dirname "$(readlink -f "$0")")"
+
+# source the helpers script
+source "$ROOT_PATH/helpers"
+
+# source the file we want to test
+source "$ROOT_PATH/../commit-msg"
+
+################################################################################
+## TODO: add tests for pre-commit hook
+################################################################################
+
+# errors counter
+ERRORS=0
+
+# test-emoji_me
+# test- || ERRORS=$((ERRORS + $?))
+
+# print the number of errors
+if [[ $ERRORS -eq 0 ]]; then
+    info "all tests are passed successfully"
+else
+    error "number of failled tests: $ERRORS"
+fi
+
+# exit with error code if there are errors
+exit $ERRORS
