@@ -56,17 +56,20 @@ fatal() {
 
 # git_uncache is a function to uncache a file from the index
 git_uncache() {
+    # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
     fi
 
     local _file="$1"
 
+    # remove the file from the index
     if ! git rm --quiet --cached "$_file"; then
         error "Failed to uncache $_file"
         return $FAILURE
     fi
 
+    # emit a warning that the file is uncached
     warning "Removed cached file: $_file.\n" \
         "Please consider to add it to .gitignore"
 
@@ -75,8 +78,7 @@ git_uncache() {
 
 # interactive_remove is a function to take an action on a file
 interactive_remove() {
-    local _answer
-
+    # check if required arguments are provided
     if [[ $# -ne 2 ]]; then
         return $FAILURE
     fi
@@ -84,15 +86,19 @@ interactive_remove() {
     local _type="$1"
     local _file="$2"
 
-    warning "$_type file detected in commit"                        \
-        "\n-> $_file"                                               \
+    # ask the user what to do
+    warning "$_type file detected in commit"                    \
+        "\n-> $_file"                                           \
         "\n\n   What do you want to do with it?"                \
         "\n\n   c) Continue to commit without change (default)" \
         "\n   r) Remove the file from the commit"               \
         "\n   a) Abort to fix it manually"                      \
         "\n\n:: Proceed? [c/r/a] "
     
+    local _answer
     read -r _answer
+
+    # check the answer
     case $_answer in
         [aA])
             fatal "Aborted by user"

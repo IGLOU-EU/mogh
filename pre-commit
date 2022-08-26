@@ -25,12 +25,13 @@ EXEC_BIN=(
 
 ## check_dnct is a function to check if a DNCT tag is spoted in the commit
 check_dnct() {
-    local _spoted
-
+    # check if this flag is enabled
     if [[ $DNCT_SUPPORT -eq $FALSE ]]; then
         return $SUCCESS
     fi
 
+    # check if the commit message has the DNCT tag
+    local _spoted
     _spoted="$(git diff --cached --name-only --diff-filter=AM -p -G "$DNCT_REGEX")"
     if [[ -n $_spoted ]]; then
         error "DNCT tag are spoted in commit, see files below to fix it:"
@@ -47,12 +48,14 @@ check_dnct() {
 
 ## check_dsstore is a function to check if a DSStore file is spoted in commit
 check_dsstore() {
+    # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
     fi
 
     local _file="$1"
 
+    # check if the file is a DSStore file
     if [[ $FILE_IGNORE_DSSTORE -eq $TRUE ]] && [[ $_file == *"/.ds_store" ]]; then
         git_uncache "$_file"
         return $FAILURE
@@ -63,18 +66,20 @@ check_dsstore() {
 
 ## check_binary is a function to check if a binary file is spoted in commit
 check_binary() {
-    local _type
-
+    # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
     fi
 
     local _file="$1"
 
+    # check if this flag is enabled
     if [[ $FILE_IGNORE_BINARY -eq $TRUE ]]; then
         return $SUCCESS
     fi
 
+    # check if the file is a binary file
+    local _type
     if ! _type="$(file -Nb "$_file" | grep -f <(printf "%s\n" "${EXEC_BIN[*]}"))"; then
         return $SUCCESS
     fi
@@ -96,19 +101,23 @@ check_binary() {
 
 ## check_size is a function to check if file size is greater than the limit
 check_size() {
-    local _size
-    
+    # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
     fi
 
     local _file="$1"
 
+    # take the file size
+    local _size
     if ! _size=$(stat -c%s "$_file" 2>/dev/null); then
         return $FAILURE
     fi
+    # convert it to KB
     _size=$((_size / 1024))
 
+    # check if the file size is greater than the limit
+    # if limit is 0 or less, then no check is done
     if [[ $FILE_MAX_SIZE -lt 1 ]] || [[ $_size -lt $FILE_MAX_SIZE ]]; then
         return $SUCCESS
     fi
