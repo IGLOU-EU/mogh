@@ -56,13 +56,11 @@ fatal() {
 
 # git_uncache is a function to uncache a file from the index
 git_uncache() {
-    local _file
-
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _file=$1
-    else
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
+
+    local _file="$1"
 
     if ! git rm --quiet --cached "$_file"; then
         error "Failed to uncache $_file"

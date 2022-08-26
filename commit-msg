@@ -129,12 +129,12 @@ format_header() {
     local _error=$FALSE
 
     # check if we have the header in argument
-    local _line
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _line=$1
-    else
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
+
+    local _line="$1"
+
 
     # check if there is multiple line
     if [[ $_line == *$'\n'* ]]; then
@@ -202,12 +202,11 @@ format_header() {
 ## format_footer is the function to check and fix the commit message footer
 format_footer() {
     # check if we have the footer in argument
-    local _line
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _line=$1
-    else
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
+
+    local _line="$1"
 
     # if signoff is required
     if [[ $SIGNOFF_REQUIRED -eq $TRUE ]]; then
@@ -245,13 +244,12 @@ format_footer() {
 ## emoji_me is a function to apply emoji to a commit message
 emoji_me() {
     # check if we have the header in argument
-    local _line
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _line=$1
-    else
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
 
+    local _line="$1"
+    
     # check if emoji_me is disable or if line already start with an emoji
     if  [[ $TYPE_TO_EMOJI -eq $FALSE ]] || 
         (grep -sPq "^${RGX_EMOJI}" <<< "$_line")

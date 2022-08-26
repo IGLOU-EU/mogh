@@ -47,13 +47,11 @@ check_dnct() {
 
 ## check_dsstore is a function to check if a DSStore file is spoted in commit
 check_dsstore() {
-    local _file
-
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _file=$1
-    else
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
+
+    local _file="$1"
 
     if [[ $FILE_IGNORE_DSSTORE -eq $TRUE ]] && [[ $_file == *"/.ds_store" ]]; then
         git_uncache "$_file"
@@ -66,13 +64,12 @@ check_dsstore() {
 ## check_binary is a function to check if a binary file is spoted in commit
 check_binary() {
     local _type
-    local _file
 
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _file=$1
-    else
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
+
+    local _file="$1"
 
     if [[ $FILE_IGNORE_BINARY -eq $TRUE ]]; then
         return $SUCCESS
@@ -100,13 +97,12 @@ check_binary() {
 ## check_size is a function to check if file size is greater than the limit
 check_size() {
     local _size
-    local _file
-
-    if [[ $# -eq 1 ]] && [[ -n $1 ]]; then
-        _file=$1
-    else
+    
+    if [[ -z $1 ]]; then
         return $FAILURE
     fi
+
+    local _file="$1"
 
     if ! _size=$(stat -c%s "$_file" 2>/dev/null); then
         return $FAILURE
