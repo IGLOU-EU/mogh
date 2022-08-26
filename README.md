@@ -131,16 +131,16 @@ is applied for hooks.
 	regex = \\[DNCT\\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS
 [mogh "files"]
 	ignore-dsstore = 1
-	ignore-binary = 10
+	ignore-binary = 2
 	size-max = 1024
-	size-autofix = 10
+	size-autofix = 2
 [mogh "gpg"]
 	required = 1
 	autofix = 1
 [mogh "header"]
 	autofix = 1
 [mogh "types"]
-	emoji = 10
+	emoji = 2
 [mogh "signoff"]
 	required = 1
 	autofix = 1
@@ -173,8 +173,8 @@ When you work with mac guys ...
 #### mogh.files.ignore-binary
 To enable or disable the binary file ignore.
 This flag is used to prevent the commit of executable binaries.
-> Can be set to 0, 1, 10. Default is 10.    
-> 0: keep it; 1: remove from commit; 10: interactive fix.
+> Can be set to 0, 1, 2. Default is 2.    
+> 0: keep it; 1: remove from commit; 2: interactive fix.
 
 #### mogh.files.size-max
 To set the maximum file size to be committed.
@@ -183,8 +183,8 @@ This flag is used to prevent the commit of large files.
 
 #### mogh.files.size-autofix
 To enable or disable the file size autofix.
-> Can be set to 0, 1, 10. Default is 10.    
-> 0: keep it; 1: remove from commit; 10: interactive fix.
+> Can be set to 0, 1, 2. Default is 2.    
+> 0: keep it; 1: remove from commit; 2: interactive fix.
 
 #### mogh.gpg.required
 To enable or disable GPG signing requirement.    
@@ -212,8 +212,8 @@ By default, all commit type from conventionalcommits.org v1 are available.
 To enable or disable the emoji type support.    
 The idea is to use the emoji type instead of the type name.
 This is largely inspired by [gitmoji.dev](https://gitmoji.dev/).
-> Can be set to 0, 1, 10. Default is 10.    
-> 0: disable; 1: enable; 10: enable but keep the type name.
+> Can be set to 0, 1, 2. Default is 2.    
+> 0: disable; 1: enable; 2: enable but keep the type name.
 
 #### mogh.types.extra-emoji
 To add extra emoji commit type to the list of supported types.    

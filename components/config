@@ -4,7 +4,7 @@
 # [READONLY]
 readonly TRUE=1
 readonly FALSE=0
-readonly SUPERPOSITION=10
+readonly SUPERPOSITION=2
 
 readonly SUCCESS=0
 readonly FAILURE=1
@@ -33,7 +33,7 @@ HEADER_AUTOFIX="$(git config --int --get mogh.header.autofix || echo $TRUE)"
 TYPE_EXTRA=($(git config --get-all mogh.types.extra))
 
 # TYPE_TO_EMOJI is a flag to enable or disable the emoji
-# 0: disable; 1: enable; 10: enable but keep the type
+# 0: disable; 1: enable; 2: enable but keep the type
 TYPE_TO_EMOJI="$(git config --int --get mogh.types.emoji || echo $SUPERPOSITION)"
 
 # TYPE_EXTRA_EMOJI is an array to add extra emoji commit type
@@ -61,7 +61,7 @@ echo '\[DNCT\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMM
 FILE_IGNORE_DSSTORE="$(git config --int --get mogh.files.ignore-dsstore || echo $TRUE)"
 
 ## FILE_IGNORE_BINARY is a flag to ignore executable binary files
-# 0: disable; 1: enable; 10: manual decision
+# 0: disable; 1: enable; 2: manual decision
 FILE_IGNORE_BINARY="$(git config --int --get mogh.files.ignore-binary || echo $SUPERPOSITION)"
 
 ## FILE_MAX_SIZE is a maximum size for a file 
@@ -69,5 +69,5 @@ FILE_IGNORE_BINARY="$(git config --int --get mogh.files.ignore-binary || echo $S
 FILE_MAX_SIZE="$(git config --int --get mogh.files.size-max || echo 1024)"
 
 ## FILE_SIZE_AUTOFIX is a flag to automatically fix files with size > FILE_MAX_SIZE
-# 0: disable; 1: enable; 10: manual decision
+# 0: disable; 1: enable; 2: manual decision
 FILE_SIZE_AUTOFIX="$(git config --int --get mogh.files.size-autofix || echo $SUPERPOSITION)"

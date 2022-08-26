@@ -376,14 +376,14 @@ test-emoji_me() {
             "line": "perf: go for the eyes Bbo, go for the eyes!!!",
             "expected": "⚡️ perf: go for the eyes Bbo, go for the eyes!!!",
             "error": 0,
-            "emoji_cfg": 10
+            "emoji_cfg": 2
         },
         {
             "name": "emoji_me enabled with superposition",
             "line": "perf(minsc to boo): go for the eyes Bbo, go for the eyes!!!",
             "expected": "⚡️ perf(minsc to boo): go for the eyes Bbo, go for the eyes!!!",
             "error": 0,
-            "emoji_cfg": 10
+            "emoji_cfg": 2
         }
     ]'
 
