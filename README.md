@@ -130,10 +130,10 @@ is applied for hooks.
 	enabled = 1
 	regex = \\[DNCT\\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS
 [mogh "files"]
-	ignoreDsStore = 1
-	ignoreBinary = 10
-	sizeMax = 1024
-	sizeAutofix = 10
+	ignore-dsstore = 1
+	ignore-binary = 10
+	size-max = 1024
+	size-autofix = 10
 [mogh "gpg"]
 	required = 1
 	autofix = 1
@@ -165,23 +165,23 @@ To set the dnct tag regex.
 This is the regex to match the dnct tag.
 > Default is `\[DNCT\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS`
 
-#### mogh.files.ignoreDsStore
+#### mogh.files.ignore-dsstore
 To enable or disable the ds_store ignore.
 When you work with mac guys ...
 > Can be set to 0 or 1. Default is 1.
 
-#### mogh.files.ignoreBinary
+#### mogh.files.ignore-binary
 To enable or disable the binary file ignore.
 This flag is used to prevent the commit of executable binaries.
 > Can be set to 0, 1, 10. Default is 10.    
 > 0: keep it; 1: remove from commit; 10: interactive fix.
 
-#### mogh.files.sizeMax
+#### mogh.files.size-max
 To set the maximum file size to be committed.
 This flag is used to prevent the commit of large files.
 > Can be set to a KB value. Default is 1024.
 
-#### mogh.files.sizeAutofix
+#### mogh.files.size-autofix
 To enable or disable the file size autofix.
 > Can be set to 0, 1, 10. Default is 10.    
 > 0: keep it; 1: remove from commit; 10: interactive fix.

@@ -55,7 +55,7 @@ check_dsstore() {
         return $FAILURE
     fi
 
-    if [[ $IGNORE_DSSTORE -eq $TRUE ]] && [[ $_file == *"/.ds_store" ]]; then
+    if [[ $FILE_IGNORE_DSSTORE -eq $TRUE ]] && [[ $_file == *"/.ds_store" ]]; then
         git_uncache "$_file"
         return $FAILURE
     fi
@@ -74,7 +74,7 @@ check_binary() {
         return $FAILURE
     fi
 
-    if [[ $IGNORE_BINARY -eq $TRUE ]]; then
+    if [[ $FILE_IGNORE_BINARY -eq $TRUE ]]; then
         return $SUCCESS
     fi
 
@@ -82,7 +82,7 @@ check_binary() {
         return $SUCCESS
     fi
 
-    case $IGNORE_BINARY in
+    case $FILE_IGNORE_BINARY in
         "$TRUE")
             git_uncache "$_file"
             ;;
@@ -113,7 +113,7 @@ check_size() {
     fi
     _size=$((_size / 1024))
 
-    if [[ $MAX_FILE_SIZE -lt 1 ]] || [[ $_size -lt $MAX_FILE_SIZE ]]; then
+    if [[ $FILE_MAX_SIZE -lt 1 ]] || [[ $_size -lt $FILE_MAX_SIZE ]]; then
         return $SUCCESS
     fi
 
@@ -123,7 +123,7 @@ check_size() {
             ;;
         "$SUPERPOSITION")
             interactive_remove \
-                "${_size}KB exceeds limit of ${MAX_FILE_SIZE}KB for a" "$_file"
+                "${_size}KB exceeds limit of ${FILE_MAX_SIZE}KB for a" "$_file"
             ;;
         *)
             return $SUCCESS

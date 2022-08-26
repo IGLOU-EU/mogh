@@ -57,17 +57,17 @@ DNCT_REGEX="$(git config --get mogh.dnct.regex ||
 echo '\[DNCT\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMMIT THIS')"
 
 # [FILES]
-## IGNORE_DSSTORE is a flag to ignore .DS_Store files
-IGNORE_DSSTORE="$(git config --int --get mogh.files.ignoreDsStore || echo $TRUE)"
+## FILE_IGNORE_DSSTORE is a flag to ignore .DS_Store files
+FILE_IGNORE_DSSTORE="$(git config --int --get mogh.files.ignore-dsstore || echo $TRUE)"
 
-## IGNORE_BINARY is a flag to ignore executable binary files
+## FILE_IGNORE_BINARY is a flag to ignore executable binary files
 # 0: disable; 1: enable; 10: manual decision
-IGNORE_BINARY="$(git config --int --get mogh.files.ignoreBinary || echo $SUPERPOSITION)"
+FILE_IGNORE_BINARY="$(git config --int --get mogh.files.ignore-binary || echo $SUPERPOSITION)"
 
-## MAX_FILE_SIZE is a maximum size for a file 
+## FILE_MAX_SIZE is a maximum size for a file 
 ## size in KB (1024 bytes), 0 to disable and by default is 1024 (1MB)
-MAX_FILE_SIZE="$(git config --int --get mogh.files.sizeMax || echo 1024)"
+FILE_MAX_SIZE="$(git config --int --get mogh.files.size-max || echo 1024)"
 
-## FILE_SIZE_AUTOFIX is a flag to automatically fix files with size > MAX_FILE_SIZE
+## FILE_SIZE_AUTOFIX is a flag to automatically fix files with size > FILE_MAX_SIZE
 # 0: disable; 1: enable; 10: manual decision
-FILE_SIZE_AUTOFIX="$(git config --int --get mogh.files.sizeAutofix || echo $SUPERPOSITION)"
+FILE_SIZE_AUTOFIX="$(git config --int --get mogh.files.size-autofix || echo $SUPERPOSITION)"
