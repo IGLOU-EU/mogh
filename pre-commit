@@ -48,6 +48,11 @@ check_dnct() {
 
 ## check_dsstore is a function to check if a DSStore file is spoted in commit
 check_dsstore() {
+    # check if this flag is enabled
+    if [[ $FILE_IGNORE_DSSTORE -eq $TRUE ]]; then
+        return $SUCCESS
+    fi
+
     # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
@@ -56,7 +61,7 @@ check_dsstore() {
     local _file="$1"
 
     # check if the file is a DSStore file
-    if [[ $FILE_IGNORE_DSSTORE -eq $TRUE ]] && [[ $_file == *"/.ds_store" ]]; then
+    if [[ $_file == *"/.ds_store" ]]; then
         git_uncache "$_file"
         return $FAILURE
     fi
@@ -66,17 +71,17 @@ check_dsstore() {
 
 ## check_binary is a function to check if a binary file is spoted in commit
 check_binary() {
+    # check if this flag is enabled
+    if [[ $FILE_IGNORE_BINARY -eq $TRUE ]]; then
+        return $SUCCESS
+    fi
+
     # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
     fi
 
     local _file="$1"
-
-    # check if this flag is enabled
-    if [[ $FILE_IGNORE_BINARY -eq $TRUE ]]; then
-        return $SUCCESS
-    fi
 
     # check if the file is a binary file
     local _type
@@ -101,6 +106,11 @@ check_binary() {
 
 ## check_size is a function to check if file size is greater than the limit
 check_size() {
+    # check if this flag is enabled
+    if [[ $FILE_MAX_SIZE -lt 1 ]]; then
+        return $SUCCESS
+    fi
+
     # check if required arguments are provided
     if [[ -z $1 ]]; then
         return $FAILURE
@@ -118,7 +128,7 @@ check_size() {
 
     # check if the file size is greater than the limit
     # if limit is 0 or less, then no check is done
-    if [[ $FILE_MAX_SIZE -lt 1 ]] || [[ $_size -lt $FILE_MAX_SIZE ]]; then
+    if [[ $_size -lt $FILE_MAX_SIZE ]]; then
         return $SUCCESS
     fi
 
