@@ -1,7 +1,7 @@
 # [WIP] 🏗️ MOGH - The Magic Of Git Hooks
 _Configurable UTF-8 git hooks templates without bullshit_
 
-[![License: GPL 3.0](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![Pull request are open](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://github.com/IGLOU-EU/mogh/fork)
 [![License: GPL 3.0](https://img.shields.io/badge/License-GPL_3.0_or_later-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## 🧠 Systems supported
