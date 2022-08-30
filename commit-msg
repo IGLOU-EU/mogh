@@ -61,8 +61,7 @@ IFS="$BISF"
 unset BISF
 
 ## CM_FOOTER is the regex for commit message footer
-## The footer MUST be signed
-CM_FOOTER="(?:[^ :]+:\s.+\n)*(?:Signed-off-by:\s(?<name>.+)\s<(?<email>[^@]+@.+)>)$"
+CM_FOOTER="(?:[^:]+:\s.+\n)*(?:Signed-off-by:\s(?<name>.+)\s<(?<email>[^@]+@.+)>)"
 
 ## format_checker is the function to check and fix the commit message format
 format_checker() {
@@ -71,13 +70,18 @@ format_checker() {
 
     local _content=()
     while read -r line; do 
+        # skip comment line
+        if [[ $line == "#"* ]]; then
+            continue
+        fi
+
         if [[ $line == "" ]]; then
-            # two empty lines are not allowed we can safely ignore this line
+            # two empty lines are not allowed we can safely ignore it
             if [[ $_empty_line -eq $TRUE ]]; then
                 continue
             fi
 
-            # previous section can't be empty
+            # first line can't be empty
             if [[ ${_content[$_section]} == "" ]]; then
                 error "A section can't be empty, probably a missing header"
                 return $FAILURE
@@ -102,6 +106,19 @@ format_checker() {
 
         continue
     done <<< "$1"
+
+    if [[ $_section -gt 1 ]]; then
+        # if current section is not empty and not contain signedoff add a section, 
+        # but if is empty and the previous one contains signedoff delete the last one
+        if [[ -n ${_content[$_section]} ]] && ! grep -sPq "Signed-off-by" <<< "${_content[$_section]}"; then
+            _section=$((_section+1))
+        elif [[ -z ${_content[$_section]} ]] && grep -sPq "Signed-off-by" <<< "${_content[$((_section-1))]}"; then
+            _section=$((_section-1))
+        fi
+    else
+        # in case of only one section are found
+        _section=$((_section+1))
+    fi
 
     # check and fix the header format
     if ! _content[1]=$(format_header "${_content[1]}"); then
@@ -200,11 +217,6 @@ format_header() {
 
 ## format_footer is the function to check and fix the commit message footer
 format_footer() {
-    # check if required arguments are provided
-    if [[ -z $1 ]]; then
-        return $FAILURE
-    fi
-
     local _line="$1"
 
     # if signoff is required
@@ -217,16 +229,23 @@ format_footer() {
         fi
 
         # autofix if needed
-        if  [[ $_error -eq $TRUE ]] &&
+        if  [[ $_error -eq $TRUE ]] && [[ $SIGNOFF_AUTOFIX -eq $TRUE ]]; then
+            _line=$(sed -E 's/\n?Signed-off-by:.*//' <<< "$_line")
+
             if [[ -z $GIT_AUTHOR_EMAIL ]] || [[ -z $GIT_AUTHOR_NAME ]]; then
                 error "Can't autofix the footer, missing author information"
                 return $FAILURE
             fi
 
-            [[ $_line != *"Signed-off-by"* ]] &&
-            [[ $SIGNOFF_AUTOFIX -eq $TRUE ]]; then
-            _error=$FALSE
-            _line+=$'\n'"Signed-off-by: $GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
+            if [[ $_line != *"Signed-off-by"* ]]; then
+                _error=$FALSE
+
+                if [[ -n $_line ]]; then
+                    _line+=$'\n'
+                fi
+
+                _line+="Signed-off-by: $GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
+            fi
         fi
 
         if [[ $_error -eq $TRUE ]]; then

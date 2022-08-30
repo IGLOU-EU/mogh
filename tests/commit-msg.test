@@ -68,9 +68,12 @@ test-format_checker() {
         _expected="$(get_data "$c" expected)"
         _expected_error="$(get_data "$c" error)"
 
+        # write name to log file
+        init_case "$_name"
+
         # when test it
         _result_status=$FAILURE
-        _result=$(format_checker "$_line" 2>/dev/null) && _result_status=$SUCCESS
+        _result=$(format_checker "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
         then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
@@ -179,12 +182,15 @@ test-format_header() {
         _expected_error="$(get_data "$c" error)"
         _autofix="$(get_data "$c" autofix)"
 
+        # write name to log file
+        init_case "$_name"
+
         # set config
         HEADER_AUTOFIX="$_autofix"
 
         # when test it
         _result_status=$FAILURE
-        _result=$(format_header "$_line" 2>/dev/null) && _result_status=$SUCCESS
+        _result=$(format_header "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
         then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
@@ -197,8 +203,8 @@ test-format_header() {
 # test-format_footer test format_foorer function
 test-format_footer() {
     # set debug
-    GIT_AUTHOR_NAME="Imoen"
-    GIT_AUTHOR_EMAIL="imoen@irenicus.fan"
+    GIT_AUTHOR_NAME="Imoen gorionwardson"
+    GIT_AUTHOR_EMAIL="imoen@candlekeep.sos"
 
     # set variables
     local _name
@@ -219,9 +225,25 @@ test-format_footer() {
             "name": "empty line",
             "line": "",
             "expected": "",
-            "error": 1,
+            "error": 0,
             "signoff": 0,
             "autofix": 0
+        },
+        {
+            "name": "empty line but needs signoff",
+            "line": "",
+            "expected": "",
+            "error": 1,
+            "signoff": 1,
+            "autofix": 0
+        },
+        {
+            "name": "empty line with autofix",
+            "line": "",
+            "expected": "Signed-off-by: Imoen gorionwardson <imoen@candlekeep.sos>"",
+            "error": 0,
+            "signoff": 1,
+            "autofix": 1
         },
         {
             "name": "signoff not required",
@@ -242,7 +264,7 @@ test-format_footer() {
         {
             "name": "signoff required but not present with autofix",
             "line": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken",
-            "expected": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken\nSigned-off-by: Imoen <imoen@irenicus.fan>",
+            "expected": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken\nSigned-off-by: Imoen gorionwardson <imoen@candlekeep.sos>",
             "error": 0,
             "signoff": 1,
             "autofix": 1
@@ -258,17 +280,25 @@ test-format_footer() {
         {
             "name": "bad signoff with autofix",
             "line": "Signed-off-by: Imoen",
-            "expected": "",
-            "error": 1,
+            "expected": "Signed-off-by: Imoen gorionwardson <imoen@candlekeep.sos>",
+            "error": 0,
             "signoff": 1,
             "autofix": 1
+        },
+        {
+            "name": "end with carriage return",
+            "line": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>\n",
+            "expected": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>\n",
+            "error": 0,
+            "signoff": 1,
+            "autofix": 0
         },
         {
             "name": "everything is fine",
             "line": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>",
             "expected": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>",
             "error": 0,
-            "signoff": 0,
+            "signoff": 1,
             "autofix": 0
         }
     ]'
@@ -282,13 +312,17 @@ test-format_footer() {
         _signoff="$(get_data "$c" signoff)"
         _autofix="$(get_data "$c" autofix)"
 
+        # write name to log file
+        init_case "$_name"
+
         # set config
         SIGNOFF_REQUIRED="$_signoff"
         SIGNOFF_AUTOFIX="$_autofix"
+        AUTHOR="Imoen gorionwardson <imoen@candlekeep.sos>"
 
         # when test it
         _result_status=$FAILURE
-        _result=$(format_footer "$_line" 2>/dev/null) && _result_status=$SUCCESS
+        _result=$(format_footer "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
         then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
@@ -395,12 +429,15 @@ test-emoji_me() {
         _expected_error="$(get_data "$c" error)"
         _emoji_cfg="$(get_data "$c" emoji_cfg)"
 
+        # write name to log file
+        init_case "$_name"
+
         # set emoji_me config
         TYPE_TO_EMOJI="$_emoji_cfg"
 
         # when test it
         _result_status=$FAILURE
-        _result=$(emoji_me "$_line" 2>/dev/null) && _result_status=$SUCCESS
+        _result=$(emoji_me "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
         then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
