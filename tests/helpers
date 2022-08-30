@@ -1,5 +1,7 @@
 #!/bin/bash
 
+readonly LOG_FILE="$ROOT_PATH/unit-test.log"
+
 # return all cases to the loop
 range_cases() {
     echo "$1" | jq -r '.[] | @base64'
@@ -8,6 +10,11 @@ range_cases() {
 # extract case data
 get_data() {
     echo "$1" | base64 --decode | jq -r ".$2"
+}
+
+# init the case log
+init_case() {
+    echo -e "\n[${FUNCNAME[1]}] $1" >> "$LOG_FILE"
 }
 
 # process the result of the test
