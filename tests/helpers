@@ -1,20 +1,56 @@
 #!/bin/bash
 
 readonly LOG_FILE="$ROOT_PATH/unit-test.log"
+readonly DATA_DIR="${TMPDIR:-/tmp}/test_data"
 
 # return all cases to the loop
 range_cases() {
     echo "$1" | jq -r '.[] | @base64'
 }
 
-# extract case data
+# extract data from a case
 get_data() {
     echo "$1" | base64 --decode | jq -r ".$2"
+}
+
+# extract range data from a case
+get_range() {
+    echo "$1" | base64 --decode | jq -r ".$2[] | @base64"
+}
+
+decode_data() {
+    echo "$1" | base64 --decode
 }
 
 # init the case log
 init_case() {
     echo -e "\n[${FUNCNAME[1]}] $1" >> "$LOG_FILE"
+}
+
+# mk_parent create parent directory
+mk_parent() {
+    local _file="$1"
+    mkdir -p "$(dirname "$_file")"  >/dev/null 2>>"$LOG_FILE"
+}
+
+# tmp_dir creates a temporary dir in the DATA_DIR
+tmp_dir() {
+    mkdir -p "$DATA_DIR" >/dev/null 2>>"$LOG_FILE"
+    mktemp -d "$DATA_DIR/tmp.XXXXXX"
+}
+
+# tmp_rm removes the temporary dir
+tmp_rm() {
+    if [[ -z $1 ]] || [[ $1 == "/" ]]; then
+        return 1
+    fi
+
+    local _dir="$1"
+    if [[ ! -d $_dir ]] || [[ $_dir != "$DATA_DIR/tmp."* ]]; then
+        return 1
+    fi
+
+    rm -rf "$_dir" 1>/dev/null 2>>"$LOG_FILE"
 }
 
 # process the result of the test
@@ -27,7 +63,7 @@ then_case() {
     failure "${FUNCNAME[1]}: Test '$1' failed"
     warning "> Got: $2"
     warning "> Expected: $3"
-    warning "> Error: $4"
-    warning "> Expected error: $5"
+    warning "> Status: $4"
+    warning "> Expected status: $5"
     return "$FAILURE"
 }
