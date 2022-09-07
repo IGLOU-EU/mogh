@@ -16,7 +16,7 @@ test-format_checker() {
     local _name
     local _line
     local _expected
-    local _expected_error
+    local _expected_status
 
     local _result_status
     local _result
@@ -29,31 +29,31 @@ test-format_checker() {
             "name": "empty line",
             "line": "",
             "expected": "",
-            "error": 1
+            "status": 1
         },
         {
             "name": "empty line before header",
             "line": "\nfeat: minsc try to speak with someone",
             "expected": "",
-            "error": 1
+            "status": 1
         },
         {
             "name": "no body",
             "line": "feat: minsc try to speak with someone\n\nSigned-off-by: minsc <minsc@speak.try>",
             "expected": "feat: minsc try to speak with someone\n\nSigned-off-by: minsc <minsc@speak.try>",
-            "error": 0
+            "status": 0
         },
         {
             "name": "one body",
             "line": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nSigned-off-by: minsc <minsc@speak.try>",
             "expected": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nSigned-off-by: minsc <minsc@speak.try>",
-            "error": 0
+            "status": 0
         },
         {
             "name": "multiple body",
             "line": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nProtagonist: Oooooh kaaaay.\n\nSigned-off-by: minsc <minsc@speak.try>",
             "expected": "feat: minsc try to speak with someone\n\nMinsc: Yes! Lead evil by example, and one day we need no longer put the boots to those that stray off the path of goodness into the muck and bile of villainy and track great bloody footprints across our lily white tiles! Boo will have clean wood shavings you evil bastards!\n\nProtagonist: Oooooh kaaaay.\n\nSigned-off-by: minsc <minsc@speak.try>",
-            "error": 0
+            "status": 0
         }
     ]'
 
@@ -66,7 +66,7 @@ test-format_checker() {
         _name="$(get_data "$c" name)"
         _line="$(get_data "$c" line)"
         _expected="$(get_data "$c" expected)"
-        _expected_error="$(get_data "$c" error)"
+        _expected_status="$(get_data "$c" status)"
 
         # write name to log file
         init_case "$_name"
@@ -76,7 +76,7 @@ test-format_checker() {
         _result=$(format_checker "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
-        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_status" || _error=$((_error + 1))
     done
 
     # return the number of errors
@@ -89,7 +89,7 @@ test-format_header() {
     local _name
     local _line
     local _expected
-    local _expected_error
+    local _expected_status
     local _autofix
 
     local _result_status
@@ -103,70 +103,70 @@ test-format_header() {
             "name": "empty line",
             "line": "",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "autofix": 1
         },
         {
             "name": "multiple line header",
             "line": "imoen\nis a\ntier A",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "autofix": 1
         },
         {
             "name": "line is too long",
             "line": "feat: imoen talks so much that his infinite dialogue is more than 80 charateres long and it s really boring",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "autofix": 1
         },
         {
             "name": "line with upper case",
             "line": "Perf: No, sarevok. Your men are already DEAD",
             "expected": "perf: no, sarevok. your men are already dead",
-            "error": 0,
+            "status": 0,
             "autofix": 1
         },
         {
             "name": "with a dot at the end",
             "line": "test: a dot can be the brain if minsc.",
             "expected": "test: a dot can be the brain if minsc",
-            "error": 0,
+            "status": 0,
             "autofix": 1
         },
         {
             "name": "multiple spaces around colon",
             "line": "build      :    boo, why are you doing this. stop it",
             "expected": "build: boo, why are you doing this. stop it",
-            "error": 0,
+            "status": 0,
             "autofix": 1
         },
         {
             "name": "multiple spaces around colon, upper case, dot at the end, without autofix",
             "line": "Perf   :       No, sarevok. Your men are already DEAD.",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "autofix": 0
         },
         {
             "name": "bad commit type",
             "line": "sarevok: I am a bad type",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "autofix": 1
         },
         {
             "name": "bad commit message and can t fix it",
             "line": "fix(probably)): imoen can t be fixed",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "autofix": 1
         },
         {
             "name": "everything is ok",
             "line": "style: playing baldurs gate is not a right but a duty",
             "expected": "style: playing baldurs gate is not a right but a duty",
-            "error": 0,
+            "status": 0,
             "autofix": 1
         }
     ]'
@@ -179,7 +179,7 @@ test-format_header() {
         _name="$(get_data "$c" name)"
         _line="$(get_data "$c" line)"
         _expected="$(get_data "$c" expected)"
-        _expected_error="$(get_data "$c" error)"
+        _expected_status="$(get_data "$c" status)"
         _autofix="$(get_data "$c" autofix)"
 
         # write name to log file
@@ -193,7 +193,7 @@ test-format_header() {
         _result=$(format_header "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
-        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_status" || _error=$((_error + 1))
     done
 
     # return the number of errors
@@ -210,7 +210,7 @@ test-format_footer() {
     local _name
     local _line
     local _expected
-    local _expected_error
+    local _expected_status
     local _signoff
     local _autofix
 
@@ -225,7 +225,7 @@ test-format_footer() {
             "name": "empty line",
             "line": "",
             "expected": "",
-            "error": 0,
+            "status": 0,
             "signoff": 0,
             "autofix": 0
         },
@@ -233,7 +233,7 @@ test-format_footer() {
             "name": "empty line but needs signoff",
             "line": "",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "signoff": 1,
             "autofix": 0
         },
@@ -241,7 +241,7 @@ test-format_footer() {
             "name": "empty line with autofix",
             "line": "",
             "expected": "Signed-off-by: Imoen gorionwardson <imoen@candlekeep.sos>"",
-            "error": 0,
+            "status": 0,
             "signoff": 1,
             "autofix": 1
         },
@@ -249,7 +249,7 @@ test-format_footer() {
             "name": "signoff not required",
             "line": "BREAKING CHANGE: Ha, you re a queer fellow",
             "expected": "BREAKING CHANGE: Ha, you re a queer fellow",
-            "error": 0,
+            "status": 0,
             "signoff": 0,
             "autofix": 0
         },
@@ -257,7 +257,7 @@ test-format_footer() {
             "name": "signoff required but not present",
             "line": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "signoff": 1,
             "autofix": 0
         },
@@ -265,7 +265,7 @@ test-format_footer() {
             "name": "signoff required but not present with autofix",
             "line": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken",
             "expected": "BREAKING CHANGE: Ahhh, the child of Bhaal has awoken\nSigned-off-by: Imoen gorionwardson <imoen@candlekeep.sos>",
-            "error": 0,
+            "status": 0,
             "signoff": 1,
             "autofix": 1
         },
@@ -273,7 +273,7 @@ test-format_footer() {
             "name": "bad signoff format",
             "line": "Signed-off-by: Imoen",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "signoff": 1,
             "autofix": 0
         },
@@ -281,7 +281,7 @@ test-format_footer() {
             "name": "bad signoff with autofix",
             "line": "Signed-off-by: Imoen",
             "expected": "Signed-off-by: Imoen gorionwardson <imoen@candlekeep.sos>",
-            "error": 0,
+            "status": 0,
             "signoff": 1,
             "autofix": 1
         },
@@ -289,7 +289,7 @@ test-format_footer() {
             "name": "end with carriage return",
             "line": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>\n",
             "expected": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>\n",
-            "error": 0,
+            "status": 0,
             "signoff": 1,
             "autofix": 0
         },
@@ -297,7 +297,7 @@ test-format_footer() {
             "name": "everything is fine",
             "line": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>",
             "expected": "BREAKING CHANGE: Swords, not words!\nSigned-off-by: Minsc and Boo <minsc@boo.friends>",
-            "error": 0,
+            "status": 0,
             "signoff": 1,
             "autofix": 0
         }
@@ -308,7 +308,7 @@ test-format_footer() {
         _name="$(get_data "$c" name)"
         _line="$(get_data "$c" line)"
         _expected="$(get_data "$c" expected)"
-        _expected_error="$(get_data "$c" error)"
+        _expected_status="$(get_data "$c" status)"
         _signoff="$(get_data "$c" signoff)"
         _autofix="$(get_data "$c" autofix)"
 
@@ -325,7 +325,7 @@ test-format_footer() {
         _result=$(format_footer "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
-        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_status" || _error=$((_error + 1))
     done
 
     # return the number of errors
@@ -338,7 +338,7 @@ test-emoji_me() {
     local _name
     local _line
     local _expected
-    local _expected_error
+    local _expected_status
     local _emoji_cfg
 
     local _result_status
@@ -352,14 +352,14 @@ test-emoji_me() {
             "name": "empty line",
             "line": "",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "emoji_cfg": 0
         },
         {
             "name": "emoji_me disabled",
             "line": "fix(imoen): i care not",
             "expected": "fix(imoen): i care not",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 0
         },
 
@@ -367,56 +367,56 @@ test-emoji_me() {
             "name": "an emoji is present in the line",
             "line": "feat: imoen is a tier A 🚀",
             "expected": "✨ imoen is a tier A 🚀",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 1
         },
         {
             "name": "emoji are already in place",
             "line": "🐛 heya! its me, imoen",
             "expected": "🐛 heya! its me, imoen",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 1
         },
         {
             "name": "emoji are already in place with scope",
             "line": "🐛 (imoen): heya! its me, imoen",
             "expected": "🐛 (imoen): heya! its me, imoen",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 1
         },
         {
             "name": "unsuported commit type",
             "line": "imoen: i feel so cold",
             "expected": "",
-            "error": 1,
+            "status": 1,
             "emoji_cfg": 1
         },
         {
             "name": "emoji_me enabled",
             "line": "feat: sometimes a warrior can only trust him hamster",
             "expected": "✨ sometimes a warrior can only trust him hamster",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 1
         },
         {
             "name": "emoji_me enabled with scope",
             "line": "feat(minsc to boo): sometimes a warrior can only trust him hamster",
             "expected": "✨ (minsc to boo): sometimes a warrior can only trust him hamster",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 1
         },
         {
             "name": "emoji_me enabled with superposition",
             "line": "perf: go for the eyes Bbo, go for the eyes!!!",
             "expected": "⚡️ perf: go for the eyes Bbo, go for the eyes!!!",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 2
         },
         {
             "name": "emoji_me enabled with superposition",
             "line": "perf(minsc to boo): go for the eyes Bbo, go for the eyes!!!",
             "expected": "⚡️ perf(minsc to boo): go for the eyes Bbo, go for the eyes!!!",
-            "error": 0,
+            "status": 0,
             "emoji_cfg": 2
         }
     ]'
@@ -426,7 +426,7 @@ test-emoji_me() {
         _name="$(get_data "$c" name)"
         _line="$(get_data "$c" line)"
         _expected="$(get_data "$c" expected)"
-        _expected_error="$(get_data "$c" error)"
+        _expected_status="$(get_data "$c" status)"
         _emoji_cfg="$(get_data "$c" emoji_cfg)"
 
         # write name to log file
@@ -440,7 +440,7 @@ test-emoji_me() {
         _result=$(emoji_me "$_line" 2>>$LOG_FILE) && _result_status=$SUCCESS
 
         # then process the result
-        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_error" || _error=$((_error + 1))
+        then_case "$_name" "$_result" "$_expected" "$_result_status" "$_expected_status" || _error=$((_error + 1))
     done
 
     # return the number of errors
