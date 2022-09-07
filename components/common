@@ -76,8 +76,8 @@ git_uncache() {
     return $SUCCESS
 }
 
-# interactive_remove is a function to take an action on a file
-interactive_remove() {
+# interactive_uncache is a function to take an action on a file
+interactive_uncache() {
     # check if required arguments are provided
     if [[ $# -ne 2 ]]; then
         return $FAILURE
