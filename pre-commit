@@ -30,9 +30,14 @@ check_dnct() {
         return $SUCCESS
     fi
 
-    # check if the commit message has the DNCT tag
+    # run the git diff
     local _spoted
-    _spoted="$(git diff --cached --name-only --diff-filter=AM -p -G "$DNCT_REGEX")"
+    if ! _spoted="$(git diff --cached --name-only --diff-filter=AM -p -G "$DNCT_REGEX")"; then
+        error "Unexpected error from git diff check your repository"
+        return $FAILURE
+    fi
+
+    # check if the commit message has the DNCT tag
     if [[ -n $_spoted ]]; then
         error "DNCT tag are spoted in commit, see files below to fix it:"
         
@@ -49,7 +54,7 @@ check_dnct() {
 ## check_dsstore is a function to check if a DSStore file is spoted in commit
 check_dsstore() {
     # check if this flag is enabled
-    if [[ $FILE_IGNORE_DSSTORE -eq $TRUE ]]; then
+    if [[ $FILE_UNCACHE_DSSTORE -eq $FALSE ]]; then
         return $SUCCESS
     fi
 
@@ -61,9 +66,8 @@ check_dsstore() {
     local _file="$1"
 
     # check if the file is a DSStore file
-    if [[ $_file == *"/.ds_store" ]]; then
-        git_uncache "$_file"
-        return $FAILURE
+    if grep -i "\.ds_store$" <<<"$_file" >/dev/null 2>>"$LOG_FILE"; then
+        git_uncache "$_file" || return $FAILURE
     fi
 
     return $SUCCESS
@@ -72,7 +76,7 @@ check_dsstore() {
 ## check_binary is a function to check if a binary file is spoted in commit
 check_binary() {
     # check if this flag is enabled
-    if [[ $FILE_IGNORE_BINARY -eq $TRUE ]]; then
+    if [[ $FILE_UNCACHE_BINARY -eq $FALSE ]]; then
         return $SUCCESS
     fi
 
@@ -89,12 +93,12 @@ check_binary() {
         return $SUCCESS
     fi
 
-    case $FILE_IGNORE_BINARY in
+    case $FILE_UNCACHE_BINARY in
         "$TRUE")
             git_uncache "$_file"
             ;;
         "$SUPERPOSITION")
-            interactive_remove "Executable binary" "$_file"
+            interactive_uncache "Executable binary" "$_file"
             ;;
         *)
             return $SUCCESS
@@ -106,7 +110,7 @@ check_binary() {
 
 ## check_size is a function to check if file size is greater than the limit
 check_size() {
-    # check if this flag is enabled
+    # check if this flag is disabled
     if [[ $FILE_MAX_SIZE -lt 1 ]]; then
         return $SUCCESS
     fi
@@ -123,22 +127,21 @@ check_size() {
     if ! _size=$(stat -c%s "$_file" 2>/dev/null); then
         return $FAILURE
     fi
-    # convert it to KB
     _size=$((_size / 1024))
 
-    # check if the file size is greater than the limit
-    # if limit is 0 or less, then no check is done
+    # check the file size
     if [[ $_size -lt $FILE_MAX_SIZE ]]; then
         return $SUCCESS
     fi
 
-    case $FILE_SIZE_AUTOFIX in
+    case $FILE_UNCACHE_OVERSIZE in
         "$TRUE")
-            git_uncache "$_file"
+            git_uncache "$_file" && return $SUCCESS
             ;;
         "$SUPERPOSITION")
-            interactive_remove \
-                "${_size}KB exceeds limit of ${FILE_MAX_SIZE}KB for a" "$_file"
+            interactive_uncache \
+                "${_size}KB exceeds limit of ${FILE_MAX_SIZE}KB for a" "$_file" \
+                && return $SUCCESS
             ;;
         *)
             return $SUCCESS
@@ -180,6 +183,6 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
             continue
         fi
     done
-fi
 
-exit $SUCCESS
+    exit $SUCCESS
+fi

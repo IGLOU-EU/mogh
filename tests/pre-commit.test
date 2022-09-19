@@ -8,17 +8,576 @@ readonly ROOT_PATH="$(dirname "$(readlink -f "$0")")"
 source "$ROOT_PATH/helpers"
 
 # source the file we want to test
-source "$ROOT_PATH/../commit-msg"
+source "$ROOT_PATH/../pre-commit"
 
-################################################################################
-## TODO: add tests for pre-commit hook
-################################################################################
+# test-check_dnct test check_dnct function
+test-check_dnct() {
+    # set variables
+    local _name
+    local _expected_status
+    local _enabled
+    local _has_git
+    local _files
+    local _contents
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "disabled",
+            "status": 0,
+            "enabled": 0,
+            "has_git": 0,
+            "files": [],
+            "contents": []
+        },
+        {
+            "name": "no git",
+            "status": 1,
+            "enabled": 1,
+            "has_git": 0,
+            "files": [],
+            "contents": []
+        },
+        {
+            "name": "no cached data",
+            "status": 0,
+            "enabled": 1,
+            "has_git": 1,
+            "files": [],
+            "contents": []
+        },
+        {
+            "name": "cached data",
+            "status": 1,
+            "enabled": 1,
+            "has_git": 1,
+            "files": ["N6MAA10816"],
+            "contents": ["[DNCT]"]
+        },
+        {
+            "name": "cached data no dnct",
+            "status": 0,
+            "enabled": 1,
+            "has_git": 1,
+            "files": ["NEXUS-7"],
+            "contents": ["Rick Deckard"]
+        },
+        {
+            "name": "multi cached data",
+            "status": 1,
+            "enabled": 1,
+            "has_git": 1,
+            "files": ["N6FAB21416", "N6MAA10816", "NEXUS-7"],
+            "contents": [
+                "Member of Roy'\''s rogue Nexus-6 group",
+                "[DNCT]\nI'\''ve seen things... seen things you little people wouldn'\''t believe. Attack ships on fire off the shoulder of Orion bright as magnesium... I rode on the back decks of a blinker and watched C-beams glitter in the dark near the Tannhäuser Gate. All those moments... they'\''ll be gone.",
+                "Rick Deckard"
+            ]
+        },
+        {
+            "name": "multi cached data no dnct",
+            "status": 0,
+            "enabled": 1,
+            "has_git": 1,
+            "files": ["N6FAB21416", "N6MAA10816", "NEXUS-7"],
+            "contents": [
+                "Member of Roy'\''s rogue Nexus-6 group",
+                "Deployed in every Off-world conflict since his inception, including campaigns at the Tannhäuser Gate and Jupiter.",
+                "Rick Deckard"
+            ]
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+
+        # given case data
+        _name="$(get_data "$c" name)"
+        _expected_status="$(get_data "$c" status)"
+        _enabled="$(get_data "$c" enabled)"
+        _has_git="$(get_data "$c" has_git)"
+        _files=($(get_range "$c" files))
+        _contents=($(get_range "$c" contents))
+
+        # write name to log file
+        init_case "$_name"
+
+        # create a temp directory
+        local _tmp_dir
+        _tmp_dir=$(tmp_dir)
+        cd "$_tmp_dir" >/dev/null 2>>"$LOG_FILE" || {
+            tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+
+            _error=$((_error + 1))
+            continue
+        }
+
+        # set git
+        if [[ $_has_git -eq $TRUE ]]; then
+            git init "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+            git config mogh.enabled 0 >/dev/null 2>>"$LOG_FILE"
+        fi
+
+        # iterate over files ids to create it
+        for ID in "${!_files[@]}"; do
+            local _file
+            _file="$(decode_data "${_files[$ID]}")"
+
+            decode_data "${_contents[$ID]}" >"${_file}"
+            git add "${_file}" >/dev/null 2>>"$LOG_FILE"
+        done
+
+        # set DNCT_SUPPORT
+        DNCT_SUPPORT=$_enabled
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(check_dnct 2>>"$LOG_FILE") && _result_status=$SUCCESS
+
+        # then process the result
+        then_case "$_name" "_" "_" "$_result_status" "$_expected_status" || _error=$((_error + 1))
+
+        # clean up
+        cd ..
+        tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# test-check_dsstore test check_dsstore function
+test-check_dsstore() {
+        # set variables
+    local _name
+    local _expected_status
+    local _enabled
+    local _file
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "disabled",
+            "status": 0,
+            "enabled": 0,
+            "files": ""
+        },
+        {
+            "name": "no file",
+            "status": 1,
+            "enabled": 1,
+            "files": ""
+        },
+        {
+            "name": "regular dsstore",
+            "status": 0,
+            "enabled": 1,
+            "file": ".DS_Store"
+        },
+        {
+            "name": "lowercase dsstore",
+            "status": 0,
+            "enabled": 1,
+            "file": ".ds_store"
+        },
+        {
+            "name": "uppercase dsstore",
+            "status": 0,
+            "enabled": 1,
+            "file": ".DS_STORE"
+        },
+        {
+            "name": "dsstore in subdirectory",
+            "status": 0,
+            "enabled": 1,
+            "file": "NEXUS-7/.DS_Store"
+        },
+        {
+            "name": "regular file",
+            "status": 0,
+            "enabled": 1,
+            "file": "N6MAA10816"
+        },
+        {
+            "name": "regular file in subdirectory",
+            "status": 0,
+            "enabled": 1,
+            "file": "NEXUS-7/N7FAA52318"
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _expected_status="$(get_data "$c" status)"
+        _enabled="$(get_data "$c" enabled)"
+        _file=$(get_data "$c" files)
+
+        # write name to log file
+        init_case "$_name"
+
+        # create a temp directory
+        local _tmp_dir
+        _tmp_dir=$(tmp_dir)
+        cd "$_tmp_dir" >/dev/null 2>>"$LOG_FILE" || {
+            tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+
+            _error=$((_error + 1))
+            continue
+        }
+
+        # set git
+        git init "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+        git config mogh.enabled 0 >/dev/null 2>>"$LOG_FILE"
+
+        # set FILE_UNCACHE_DSSTORE
+        FILE_UNCACHE_DSSTORE=$_enabled
+
+        # set test file
+        if [[ -n $_file ]]; then
+            mk_parent "$_file"
+            echo ".keep" >"${_file}"
+            git add "${_file}" >/dev/null 2>>"$LOG_FILE"
+        fi
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(check_dsstore "$_file" 2>>"$LOG_FILE") && _result_status=$SUCCESS
+
+        if [[ $_result_status -eq $SUCCESS ]]; then
+            git diff --cached --name-only | grep -i "\.ds_store$" && {
+                _result_status=$FAILURE
+                warning "ds_store file are still tracked: $(git diff --cached --name-only | grep "\.ds_store$")"
+            }
+        fi
+
+        # then process the result
+        then_case "$_name" "_" "_" "$_result_status" "$_expected_status" || _error=$((_error + 1))
+
+        # clean up
+        cd ..
+        tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# test-check_binary test check_binary function
+test-check_binary() {
+        # set variables
+    local _name
+    local _expected_status
+    local _enabled
+    local _file
+    local _header
+    local _cached
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "disabled",
+            "status": 0,
+            "enabled": 0,
+            "files": "",
+            "header": "",
+            "cached": 0
+        },
+        {
+            "name": "no file",
+            "status": 1,
+            "enabled": 1,
+            "files": "",
+            "header": "",
+            "cached": 0
+        },
+        {
+            "name": "ELF Linux keep",
+            "status": 0,
+            "enabled": 0,
+            "files": "elf-linux",
+            "header": "\\x7F\\x45\\x4C\\x46\\x02\\x01\\x01\\x03",
+            "cached": 1
+        },
+        {
+            "name": "ELF Linux",
+            "status": 0,
+            "enabled": 1,
+            "files": "elf-linux",
+            "header": "\\x7F\\x45\\x4C\\x46\\x02\\x01\\x01\\x03",
+            "cached": 0
+        },
+        {
+            "name": "ELF Hurd",
+            "status": 0,
+            "enabled": 1,
+            "files": "elf-hurd",
+            "header": "\\x7F\\x45\\x4C\\x46\\x02\\x01\\x01\\x04",
+            "cached": 0
+        },
+        {
+            "name": "Mach-O",
+            "status": 0,
+            "enabled": 1,
+            "files": "bad-os",
+            "header": "\\xFE\\xED\\xFA\\xCF",
+            "cached": 0
+        },
+        {
+            "name": "Mach-O 64-bit",
+            "status": 0,
+            "enabled": 1,
+            "files": "bad-os-64",
+            "header": "\\xCF\\xFA\\xED\\xFE",
+            "cached": 0
+        },
+        {
+            "name": "Secret file",
+            "status": 0,
+            "enabled": 1,
+            "files": "N6MAA10816",
+            "header": "\\x4E\\x45\\x58\\x55\\x53\\x2D\\x37",
+            "cached": 0
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _expected_status="$(get_data "$c" status)"
+        _enabled="$(get_data "$c" enabled)"
+        _file=$(get_data "$c" files)
+        _header=$(get_data "$c" header)
+        _cached=$(get_data "$c" cached)
+
+        # write name to log file
+        init_case "$_name"
+
+        # create a temp directory
+        local _tmp_dir
+        _tmp_dir=$(tmp_dir)
+        cd "$_tmp_dir" >/dev/null 2>>"$LOG_FILE" || {
+            tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+
+            _error=$((_error + 1))
+            continue
+        }
+
+        # set git
+        git init "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+        git config mogh.enabled 0 >/dev/null 2>>"$LOG_FILE"
+
+        # set FILE_UNCACHE_BINARY
+        FILE_UNCACHE_BINARY=$_enabled
+
+        # set test file
+        if [[ -n $_file ]]; then
+            mk_parent "$_file"
+            echo -ne "$_header" >"$_file"
+            git add "$_file" >/dev/null 2>>"$LOG_FILE"
+        fi
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(check_binary "$_file" 2>>"$LOG_FILE") && _result_status=$SUCCESS
+
+        if [[ $_result_status -eq $SUCCESS ]] && [[ $_cached -eq $FALSE ]]; then
+            git diff --cached --name-only | grep -i "\.ds_store$" && {
+                _result_status=$FAILURE
+                warning "executable binary file are still tracked: $(git diff --cached --name-only | grep "$_file$")"
+            }
+        fi
+
+        # then process the result
+        then_case "$_name" "_" "_" "$_result_status" "$_expected_status" || _error=$((_error + 1))
+
+        # clean up
+        cd ..
+        tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# test-check_size test check_size function
+test-check_size() {
+    # set variables
+    local _name
+    local _file
+    local _size
+    local _max_size
+    local _action
+    local _cached
+    local _expected_status
+
+    local _result_status
+    local _result
+
+    local _error=$FALSE
+
+    # set the test cases
+    cases='[
+        {
+            "name": "disabled",
+            "file": "",
+            "size": 0,
+            "max_size": -1,
+            "action": 0,
+            "cached": 0,
+            "status": 0
+        },
+        {
+            "name": "no file",
+            "file": "",
+            "size": 0,
+            "max_size": 100,
+            "action": 0,
+            "cached": 0,
+            "status": 1
+        },
+        {
+            "name": "keep regular file",
+            "file": "Voight-Kampff.test",
+            "size": 10,
+            "max_size": 100,
+            "action": 0,
+            "cached": 1,
+            "status": 0
+        },
+        {
+            "name": "keep too big file",
+            "file": "ElectricSheep.dream",
+            "size": 150,
+            "max_size": 100,
+            "action": 0,
+            "cached": 1,
+            "status": 0
+        },
+        {
+            "name": "keep very too big file",
+            "file": "PhilipK.Dick",
+            "size": 10000,
+            "max_size": 100,
+            "action": 0,
+            "cached": 1,
+            "status": 0
+        },
+        {
+            "name": "regular file",
+            "file": "RickDeckard.slave",
+            "size": 10,
+            "max_size": 100,
+            "action": 1,
+            "cached": 1,
+            "status": 0
+        },
+        {
+            "name": "too big file",
+            "file": "TyrellCorporation.liar",
+            "size": 150,
+            "max_size": 100,
+            "action": 1,
+            "cached": 0,
+            "status": 0
+        },
+        {
+            "name": "very too big file",
+            "file": "WallaceCorporation.liar",
+            "size": 10000,
+            "max_size": 100,
+            "action": 1,
+            "cached": 0,
+            "status": 0
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _file="$(get_data "$c" file)"
+        _size="$(get_data "$c" size)"
+        _max_size="$(get_data "$c" max_size)"
+        _action="$(get_data "$c" action)"
+        _cached="$(get_data "$c" cached)"
+        _expected_status="$(get_data "$c" status)"
+
+        # write name to log file
+        init_case "$_name"
+
+        # create a temp directory
+        local _tmp_dir
+        _tmp_dir=$(tmp_dir)
+        cd "$_tmp_dir" >/dev/null 2>>"$LOG_FILE" || {
+            tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+
+            _error=$((_error + 1))
+            continue
+        }
+
+        # set git
+        git init "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+        git config mogh.enabled 0 >/dev/null 2>>"$LOG_FILE"
+
+        # set FILE_UNCACHE_BINARY
+        FILE_MAX_SIZE=$_max_size
+        FILE_UNCACHE_OVERSIZE=$_action
+
+        # set test file
+        if [[ -n $_file ]]; then
+            mk_parent "$_file"
+            fallocate -l "$_size"K "$_file" >/dev/null 2>>"$LOG_FILE"
+            git add "$_file" >/dev/null 2>>"$LOG_FILE"
+        fi
+
+        # when test it
+        _result_status=$FAILURE
+        _result=$(check_size "$_file" 2>>"$LOG_FILE") && _result_status=$SUCCESS
+
+        if [[ $_result_status -eq $_expected_status ]] && [[ -n $_file ]] ; then
+            local _cached_status=$FALSE
+            git diff --cached --name-only | grep -i "$_file" >/dev/null 2>>"$LOG_FILE" && _cached_status=$TRUE
+
+            if [[ $_cached_status -ne $_cached ]]; then
+                _result_status=$SUPERPOSITION
+                warning "file $_file is not in the right cache status: $_cached_status"
+            fi
+        fi
+
+        # then process the result
+        then_case "$_name" "_" "_" "$_result_status" "$_expected_status" || _error=$((_error + 1))
+
+        # clean up
+        cd ..
+        tmp_rm "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+    done
+
+    # return the number of errors
+    return $_error
+}
 
 # errors counter
 ERRORS=0
 
-# test-emoji_me
-# test- || ERRORS=$((ERRORS + $?))
+# need to test
+test-check_dnct || ERRORS=$((ERRORS + $?))
+test-check_dsstore || ERRORS=$((ERRORS + $?))
+test-check_binary || ERRORS=$((ERRORS + $?))
+test-check_size || ERRORS=$((ERRORS + $?))
 
 # print the number of errors
 if [[ $ERRORS -eq 0 ]]; then
