@@ -14,8 +14,8 @@
 # (* && Signed-off-by: <name> <email>)
 
 # source config and common file
-source ./components/config
-source ./components/common
+source "${0%/*}/components/config"
+source "${0%/*}/components/common"
 
 # shellcheck disable=SC2206
 ## CM_TYPE is an array of commit message type,

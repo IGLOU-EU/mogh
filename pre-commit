@@ -4,8 +4,8 @@
 # files and auto or manual fixit it if needed.
 
 # source config and common file
-source ./components/config
-source ./components/common
+source "${0%/*}/components/config"
+source "${0%/*}/components/common"
 
 ## EXEC_BIN is an array of executable binary format
 EXEC_BIN=(
