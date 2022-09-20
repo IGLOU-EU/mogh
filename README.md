@@ -4,6 +4,8 @@ _Configurable UTF-8 git hooks templates without bullshit_
 [![Pull request are open](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://github.com/IGLOU-EU/mogh/fork)
 [![License: GPL 3.0](https://img.shields.io/badge/License-GPL_3.0_or_later-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 
+The reason of this project, is that some Git Hooks usually have no interest in being checked out AFTER a push (like with github actions). Checking the format, preventing the commit of certain information or files, etc. All this stuff should be checked locally to prevent mistake.
+
 ## 🧠 Systems supported
 - [x] Gnu/Linux
 - [ ] Windows
