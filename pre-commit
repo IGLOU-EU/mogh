@@ -66,7 +66,7 @@ check_dsstore() {
     local _file="$1"
 
     # check if the file is a DSStore file
-    if grep -i "\.ds_store$" <<<"$_file" >/dev/null 2>>"$LOG_FILE"; then
+    if grep -i "\.ds_store$" <<<"$_file" >/dev/null; then
         git_uncache "$_file" || return $FAILURE
     fi
 
