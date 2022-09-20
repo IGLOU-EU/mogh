@@ -1,4 +1,4 @@
-# [WIP] 🏗️ MOGH - The Magic Of Git Hooks
+# [1.0.0] 🏗️ MOGH - The Magic Of Git Hooks
 _Configurable UTF-8 git hooks templates without bullshit_
 
 [![Pull request are open](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://github.com/IGLOU-EU/mogh/fork)
