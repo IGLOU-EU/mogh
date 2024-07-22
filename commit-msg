@@ -55,17 +55,37 @@ CM_EMOJI=(
     ${TYPE_EXTRA_EMOJI[*]}
 )
 
-## CM_HEADER and CM_HEADER_EMOJI are the regex for commit message header
+## RGX_MESSAGE and RGX_MESSAGE_EMOJI are the regex for commit message header
 BISF="$IFS"
 IFS="|"
 RGX_EMOJI="(?<emoji>${CM_EMOJI[*]})"
-CM_HEADER="^(?:${RGX_EMOJI} )?(?<type>${CM_TYPE[*]})(?:\((?<scope>[^)A-Z]+)\))?(?<breaking>!)?:\s(?<subject>[^A-Z].+[^.])$"
-CM_HEADER_EMOJI="^${RGX_EMOJI}(?:\((?<scope>[^)A-Z]+)\))?(?<breaking>!)?:?\s(?<subject>[^A-Z].+[^.])$"
+RGX_HEADER="^(?:${RGX_EMOJI} )?(?<type>${CM_TYPE[*]})(?:\((?<scope>[^)A-Z]+)\))?(?<breaking>!)?:"
+RGX_MESSAGE="^${RGX_HEADER}\s(?<subject>[^A-Z].+[^.])$"
+RGX_MESSAGE_EMOJI="^${RGX_EMOJI}(?:\((?<scope>[^)A-Z]+)\))?(?<breaking>!)?:?\s(?<subject>[^A-Z].+[^.])$"
 IFS="$BISF"
 unset BISF
 
 ## CM_FOOTER is the regex for commit message footer
 CM_FOOTER="(?:[^:]+:\s.+\n)*(?:Signed-off-by:\s(?<name>.+)\s<(?<email>[^@]+@.+)>)"
+
+## Format description
+HEADER_RULE="Commit message format: <type>(optional scope): <subject> (max $HEADER_MAX_LENGTH chars, no upper case, no final dot, with '!' before the colon for breaking change)"
+FOOTER_RULE="Commit footer format: Signed-off-by: <name> <email>"
+
+## print_available_type is a function to list all available commit type
+print_available_type() {
+    local _types=()
+    for i in "${!CM_TYPE[@]}"; do
+        if [[ ${CM_EMOJI[$i]} == "" ]]; then
+            _types+=("${CM_TYPE[$i]}")
+        else
+            _types+=("${CM_TYPE[$i]}: ${CM_EMOJI[$i]}")
+        fi
+    done
+
+    info "Available commit type :"
+    info "$(printf "%s, " "${_types[@]}")"
+}
 
 ## format_checker is the function to check and fix the commit message format
 format_checker() {
@@ -169,10 +189,19 @@ format_header() {
         return $FAILURE
     fi
 
-    # check the header format CM_HEADER to CM_HEADER_EMOJI
+    # Check the commit header
+    if ! (grep -sPq "${RGX_HEADER}.*" <<< "$_line"); then
+        print_available_type
+        error "Invalid header format in commit message"
+        error "$_line"
+        error "$HEADER_RULE"
+        return $FAILURE
+    fi
+
+    # check the header format RGX_MESSAGE or RGX_MESSAGE_EMOJI
     (
-        grep -sPq "${CM_HEADER}" <<< "$_line" ||
-        grep -sPq "${CM_HEADER_EMOJI}" <<< "$_line"
+        grep -sPq "${RGX_MESSAGE}" <<< "$_line" ||
+        grep -sPq "${RGX_MESSAGE_EMOJI}" <<< "$_line"
     ) || _error=$TRUE
 
     # try to auto fix the header if needed
@@ -200,14 +229,18 @@ format_header() {
         }
 
         # check the format again
-        (grep -sPq "${CM_HEADER}" <<< "$_line" || grep -sPq "${CM_HEADER_EMOJI}" <<< "$_line") || {
-            error "Invalid header format can't be fixed\n$_line"
+        (grep -sPq "${RGX_MESSAGE}" <<< "$_line" || grep -sPq "${RGX_MESSAGE_EMOJI}" <<< "$_line") || {
+            error "Invalid header format can't be fixed"
+            error "$_line"
+            error "$HEADER_RULE"
             return $FAILURE
         }
     fi
 
     if [[ $_error -eq $TRUE ]]; then
-        error "Invalid header format\n$_line"
+        error "Invalid header format"
+        error "$_line"
+        error "$HEADER_RULE"
         return $FAILURE
     fi
 
