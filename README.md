@@ -4,13 +4,13 @@ _Configurable UTF-8 git hooks templates without bullshit_
 [![Pull request are open](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://github.com/IGLOU-EU/mogh/fork)
 [![License: GPL 3.0](https://img.shields.io/badge/License-GPL_3.0_or_later-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 
-The reason of this project, is that some Git Hooks usually have no interest in being checked out AFTER a push (like with github actions). Checking the format, preventing the commit of certain information or files, etc. All this stuff should be checked locally to prevent mistake.
+The reason of this project, is that some Git Hooks usually have no interest in being checked out AFTER a push (like with github actions). Checking the format, preventing the commit of certain information or files, etc. All this stuff should be checked locally to prevent mistake and leave no trace of it in the history.
 
 ## 🧠 Systems supported
 - [x] Gnu/Linux
 - [ ] Windows
 - [ ] macOS
-- [ ] BSD
+- [ ] BSD (need to validate posix compatibility)
 
 ## 🧪 Features
 - [x] Can be configured with `git config` globally or locally
@@ -241,3 +241,27 @@ It use git variable `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL` to generate it.
 To enable or disable the WIP tag push prevention.   
 This flag will prevent the push of a commit with the WIP tag.
 > Can be set to 0 or 1. Default is 1.
+
+## 🤝 Contributing
+For contribute to this project, follow these steps:
+1. Fork this repository.
+2. Clone it to your local machine.
+3. Remove the `.git/hooks` directory of the cloned repository `rm -rf .git/hooks`.
+4. Create a symbolic link to THIS clone `ln -s "$(pwd)" "$(pwd)/.git/hooks"`.
+5. Create a new branch with the feature, fix... name like `git checkout -b feature/feature-name`.
+6. Commit, push and create a pull request ! 🎉
+> If you have any questions, feel free to ask.
+> And do not forget to sign your commits.
+
+## 🧪 Testing
+Every hook has its own unit test (if not, I have missed it). 
+
+If you need to write a test. These are located in the `tests` directory and have the same name as the hook with the `.test` extension, you need to make it executable with `chmod +x tests/commit-msg.test` and cases are defined in json format.
+
+To run them, you need to have `jq` installed. Then you can run it like every other bash script. Like:
+```bash
+./tests/commit-msg.test
+```
+
+## 📜 License
+This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE) file for details.
