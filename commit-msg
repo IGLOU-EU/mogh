@@ -31,6 +31,7 @@ CM_TYPE=(
     "refactor"
     "style"
     "test"
+    "merge"
     ${TYPE_EXTRA[*]}
 )
 
@@ -48,6 +49,7 @@ CM_EMOJI=(
     "♻️"
     "💄"
     "🧪"
+    "🔀"
     ${TYPE_EXTRA_EMOJI[*]}
 )
 
