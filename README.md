@@ -26,7 +26,7 @@ The reason of this project, is that some Git Hooks usually have no interest in b
 - [x] Support of DNCT (Do Not Commit This) tags in files
 - [x] Prevent the commit of the mac ds_store ...
 - [ ] Prevent pushing to remote branches that is not up-to-date with local branches
-- [ ] Prevent pushing commit with WIP (Work in Progress) tag
+- [x] Prevent pushing commit with WIP tag
 - [x] Require a .gitignore file to be present in the root of the repository
 - [ ] Emit a warning if potential sensitive information is found in a file
 
@@ -122,8 +122,7 @@ git config mogh.types.emoji 1
 Take your `git config` and fill it to your needs 🎉
 
 ### TOML config 📋
-This is the `git config` representation of how the default MOGH configuration
-is applied for hooks.
+This is the `git config` representation of how the default MOGH configuration applied for hooks.
 ```toml
 [mogh]
 	enabled = 1
@@ -146,6 +145,8 @@ is applied for hooks.
 [mogh "signoff"]
 	required = 1
 	autofix = 1
+[mogh "wip"]
+	prevent-push = 1
 ```
 
 ### Detailed config 📑
@@ -234,4 +235,9 @@ This flag will force user to use git `-s, --signoff`
 To enable or disable automatic signoff fixing.    
 This flag will try to automatically add the signoff to the commit.
 It use git variable `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL` to generate it.
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.wip.prevent-push
+To enable or disable the WIP tag push prevention.   
+This flag will prevent the push of a commit with the WIP tag.
 > Can be set to 0 or 1. Default is 1.

@@ -71,3 +71,7 @@ FILE_MAX_SIZE="$(git config --int --get mogh.files.size-max || echo 1024)"
 ## FILE_UNCACHE_OVERSIZE is a flag to automatically fix files with size > FILE_MAX_SIZE
 # 0: disable; 1: enable; 2: manual decision
 FILE_UNCACHE_OVERSIZE="$(git config --int --get mogh.files.uncache-oversize || echo $SUPERPOSITION)"
+
+# [WIP]
+## WIP_PREVENT_PUSH is a flag to prevent to push WIP commits
+WIP_PREVENT_PUSH="$(git config --int --get mogh.wip.prevent-push || echo $TRUE)"

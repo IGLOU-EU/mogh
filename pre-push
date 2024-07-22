@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# This script is used by the pre-push hook to check the pushed
+# commits and branches to block the push if needed.
+
+# source config and common file
+source "${0%/*}/components/config"
+source "${0%/*}/components/common"
+
+# prevent_wip is a function to prevent the push of WIP commits
+prevent_wip() {
+    # check if this flag is enabled
+    if [[ $WIP_PREVENT_PUSH -eq $FALSE ]]; then
+        warning "Pushing WIP commits are allowed !"
+        return $SUCCESS
+    fi
+
+    local IFS=$'\n'
+    local _commit
+    local _as_wip=$FALSE
+
+    # Check if the commit message has the WIP tag
+    for _commit in $(git log origin/HEAD..HEAD --pretty=format:"%H"); do
+        local _message
+        _message="$(git log -1 --pretty=format:"%s" "$_commit")"
+
+        if grep -q -Ei 'WIP ?(\([^)]\) ?)?:' <<< "$_message"; then
+            warning "Commit '$_commit' is a WIP commit '$_message'"
+            _as_wip=$TRUE
+        fi
+    done
+
+    if [[ $_as_wip -eq $TRUE ]]; then
+        error "Pushing WIP commits are not allowed, please fix it !"
+        return $FAILURE
+    fi
+
+    return $SUCCESS
+}
+
+## MAIN
+# do not execute if this script is sourced required for unit testing
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # This assignation part comes from the default git hooks--pre-push.sample
+    null_hash=$(git hash-object --stdin </dev/null | tr '0-9a-f' '0')
+
+    remote_name="$1" # Nom du dépôt distant
+    remote_url="$2" # URL du dépôt distant
+
+    local_ref=() # Local reference (branche) qui est poussée
+    local_oid=() # OID (hash) de la référence locale
+    remote_ref=() # Référence (branche) distante
+    remote_oid=() # OID (hash) de la référence distante
+
+    while read lref loid rref roid; do
+        local_ref+=("$lref")
+        local_oid+=("$loid")
+        remote_ref+=("$rref")
+        remote_oid+=("$roid")
+    done
+
+    # Preventing WIP commits
+    if ! prevent_wip; then
+        exit $FAILURE
+    fi
+
+    exit $SUCCESS
+fi
