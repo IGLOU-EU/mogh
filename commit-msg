@@ -32,6 +32,7 @@ CM_TYPE=(
     "style"
     "test"
     "merge"
+    "wip"
     ${TYPE_EXTRA[*]}
 )
 
@@ -50,6 +51,7 @@ CM_EMOJI=(
     "💄"
     "🧪"
     "🔀"
+    "🚧"
     ${TYPE_EXTRA_EMOJI[*]}
 )
 
