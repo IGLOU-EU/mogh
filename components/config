@@ -27,6 +27,9 @@ GPG_AUTOFIX="$(git config --int --get mogh.gpg.autofix || echo $TRUE)"
 ## HEADER_AUTOFIX is a flag that will try to automatically fix the header
 HEADER_AUTOFIX="$(git config --int --get mogh.header.autofix || echo $TRUE)"
 
+## HEADER_MAX_LENGTH is a maximum length for the header
+HEADER_MAX_LENGTH="$(git config --int --get mogh.header.max-length || echo 80)"
+
 # [TYPES]
 # TYPE_EXTRA is an array to add extra commit type
 # by default all commit type from conventionalcommits.org v1 are available

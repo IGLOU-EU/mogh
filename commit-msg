@@ -163,8 +163,9 @@ format_header() {
     fi
 
     # check the header length
-    if [[ ${#_line} -gt 80 ]]; then
-        error "The header is too long"
+    if [[ ${#_line} -gt $HEADER_MAX_LENGTH ]]; then
+        warning "Current header length is ${#_line} '${_line}'"
+        error "The header is too long, max length is $HEADER_MAX_LENGTH"
         return $FAILURE
     fi
 

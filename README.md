@@ -140,6 +140,7 @@ This is the `git config` representation of how the default MOGH configuration ap
 	autofix = 1
 [mogh "header"]
 	autofix = 1
+	max-length = 80
 [mogh "types"]
 	emoji = 2
 [mogh "signoff"]
@@ -204,6 +205,11 @@ To enable or disable automatic header fixing.
 This flag will try to automatically fix the header of the commit.
 According to the [conventionalcommits.org v1](https://www.conventionalcommits.org/en/v1.0.0/).
 > Can be set to 0 or 1. Default is 1.
+
+#### mogh.header.max-length
+To set the maximum length of the commit header.
+This flag is used to prevent the commit of too long header.
+> Can be set to a number. Default is 80.
 
 #### mogh.types.extra
 To add extra commit type to the list of supported types.    
