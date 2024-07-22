@@ -93,7 +93,7 @@ interactive_uncache() {
         "\n\n   c) Continue to commit without change (default)" \
         "\n   r) Remove the file from the commit"               \
         "\n   a) Abort to fix it manually"                      \
-        "\n\n:: Proceed? [c/r/a] "
+        "\n\n:: Proceed? [C/r/a] "
     
     local _answer
     read -r _answer
