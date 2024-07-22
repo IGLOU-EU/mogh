@@ -182,6 +182,7 @@ format_header() {
 
         # Convert the header to lowercase
         _line=$(tr '[:upper:]' '[:lower:]' <<< "$_line") || {
+            warning "Line: '$_line'"
             error "Failed to convert the header to lowercase"
             return $FAILURE
         }
@@ -193,6 +194,7 @@ format_header() {
 
         # try to fix bad colon 
         _line=$(sed -E 's/^([^:     ]+)\s*:\s*/\1: /' <<< "$_line") || {
+            warning "Line: '$_line'"
             error "Failed to remove bad semicolon"
             return $FAILURE
         }
@@ -320,7 +322,8 @@ emoji_me() {
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
     # check if arg is a regular file
     if [[ ! -f $1 ]]; then
-        error "Argument 1 is not a regular file"
+        warning "Argument: $1"
+        error "Gived argument is not a regular file"
         exit $FAILURE
     fi
 
