@@ -14,8 +14,8 @@
 # (* && Signed-off-by: <name> <email>)
 
 # source config and common file
-source "${0%/*}/components/config"
-source "${0%/*}/components/common"
+source "./components/config"
+source "./components/common"
 
 # shellcheck disable=SC2206
 ## CM_TYPE is an array of commit message type,
@@ -359,7 +359,7 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
         error "Gived argument is not a regular file"
         exit $FAILURE
     fi
-
+ 
     # process the file
     _result="$(format_checker "$(<"$1")")" && {
         echo "$_result" > "$1"

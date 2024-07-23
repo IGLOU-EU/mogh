@@ -1,0 +1,109 @@
+#!/bin/bash
+# shellcheck disable=SC2034,SC2155
+
+# define the relative root path
+readonly ROOT_PATH="$(dirname "$(readlink -f "$0")")"
+
+# source the helpers script
+source "$ROOT_PATH/helpers"
+
+# source the file we want to test
+source "$ROOT_PATH/../prepare-commit-msg"
+
+test-secure_wip() {
+    # set variables
+    local _name
+    local _message
+    local _enabled
+    local _expected
+
+    local _error=$FALSE
+    local _result_status
+
+    # set the test cases
+    cases='[
+        {
+            "name": "disabled",
+            "message": "",
+            "sha1": "",
+            "enabled": 0,
+            "expected": 0
+        },
+        {
+            "name": "no message",
+            "message": "",
+            "sha1": "",
+            "enabled": 1,
+            "expected": 0
+        },
+        {
+            "name": "not a wip",
+            "message": "feat: tanhäuser gate is open",
+            "sha1": "",
+            "enabled": 1,
+            "expected": 0
+        },
+        {
+            "name": "amend a wip",
+            "message": "wip: making a new replicant",
+            "sha1": "a1b2c3d4",
+            "enabled": 1,
+            "expected": 0
+        },
+        {
+            "name": "wip",
+            "message": "wip: making a new replicant",
+            "sha1": "",
+            "enabled": 1,
+            "expected": 1
+        },
+        {
+            "name": "wip with emoji",
+            "message": "🚧 wip: making a new replicant",
+            "sha1": "",
+            "enabled": 1,
+            "expected": 1
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _message="$(get_data "$c" message)"
+        _sha1="$(get_data "$c" sha1)"
+        _enabled="$(get_data "$c" enabled)"
+        _expected="$(get_data "$c" expected)"
+
+        # write name to log file
+        init_case "$_name"
+
+        # set config
+        WIP_SECURE_COMMIT=$_enabled
+
+        # when test it
+        _result_status=$FAILURE
+        secure_wip "$_sha1" "$_message" 2>>"$LOG_FILE" && _result_status=$SUCCESS
+
+        # process the result
+        then_case "$_name" "_" "_" "$_result_status" "$_expected" || _error=$((_error + 1))
+    done
+
+    # return the number of errors
+    return $_error
+}
+
+# errors counter
+ERRORS=0
+
+# test-emoji_me
+test-secure_wip || ERRORS=$((ERRORS + $?))
+
+# print the number of errors
+if [[ $ERRORS -eq 0 ]]; then
+    info "all tests are passed successfully"
+else
+    error "number of failled tests: $ERRORS"
+fi
+
+# exit with error code if there are errors
+exit $ERRORS

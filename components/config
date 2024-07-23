@@ -78,3 +78,6 @@ FILE_UNCACHE_OVERSIZE="$(git config --int --get mogh.files.uncache-oversize || e
 # [WIP]
 ## WIP_PREVENT_PUSH is a flag to prevent to push WIP commits
 WIP_PREVENT_PUSH="$(git config --int --get mogh.wip.prevent-push || echo $TRUE)"
+
+## WIP_SECURE_COMMIT is a flag to prevent commit when previous commit is a WIP
+WIP_SECURE_COMMIT="$(git config --int --get mogh.wip.secure-commit || echo $TRUE)"

@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# This script is used by the prepare-commit-msg hook to check the commit itself
+# and prevent some mistakes. To commit message formater, check commit-msg hook.
+
+# source config and common file
+source "./components/config"
+source "./components/common"
+
+## is_new is a function to check if the current commit is an amend
+is_new() {
+    # check if the argument is provided
+    if [[ $# -ne 1 ]]; then
+        error "is_new function require sha1 argument"
+        return $FAILURE
+    fi
+
+    local _sha1="$1"
+
+    # check if the commit is a new commit
+    if [[ -z "$_sha1" ]]; then
+        return $SUCCESS
+    fi
+
+    return $FAILURE
+}
+
+## secure_wip is a function to check if the previous commit is a WIP
+secure_wip() {
+    # check if this flag is disabled
+    if [[ $WIP_SECURE_COMMIT -eq $FALSE ]]; then
+        warning "Conniting after a WIP commit are allowed 😱"
+        return $SUCCESS
+    fi
+
+    # check if two arg are provided
+    if [[ $# -ne 2 ]]; then
+        error "secure_wip function require two arguments"
+        return $FAILURE
+    fi
+
+    local _sha1="$1"
+    local _message="$2" # previous commit message if it is a new commit
+
+    # check if it is not a new commit
+    if ! is_new "$_sha1"; then
+        return $SUCCESS
+    fi
+
+    # check if the previous commit is a WIP
+    if grep -q -Ei 'WIP ?(\([^)]\) ?)?:' <<< "$_message"; then
+        error "Previous commit is a WIP, please fix it before new commit"
+        error "$_message"
+        return $FAILURE
+    fi
+
+    return $SUCCESS 
+}
+
+## MAIN
+# do not execute if this script is sourced required for unit testing
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # Fille where the commit message is stored
+    COMMIT_MSG_FILE="$1"
+
+    # Source of the commit message (message, template, merge, squash or commit)
+    COMMIT_SOURCE="$2"
+
+    # SHA1 of the commit (empty if it is a new commit)
+    SHA1="$3"
+
+    # check if the previous commit is a WIP
+    if ! secure_wip "$SHA1" "$(git log -1 --pretty=%s)"; then
+        exit $FAILURE
+    fi
+
+    exit $SUCCESS
+fi

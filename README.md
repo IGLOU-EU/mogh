@@ -27,6 +27,7 @@ The reason of this project, is that some Git Hooks usually have no interest in b
 - [x] Prevent the commit of the mac ds_store ...
 - [ ] Prevent pushing to remote branches that is not up-to-date with local branches
 - [x] Prevent pushing commit with WIP tag
+- [x] Prevent commit when previous commit is a WIP
 - [x] Require a .gitignore file to be present in the root of the repository
 - [ ] Emit a warning if potential sensitive information is found in a file
 
