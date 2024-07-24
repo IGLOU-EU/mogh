@@ -152,6 +152,7 @@ This is the `git config` representation of how the default MOGH configuration ap
 	autofix = 1
 [mogh "wip"]
 	prevent-push = 1
+	secure-commit = 1
 ```
 
 ### Detailed config 📑
@@ -250,6 +251,11 @@ It use git variable `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL` to generate it.
 #### mogh.wip.prevent-push
 To enable or disable the WIP tag push prevention.   
 This flag will prevent the push of a commit with the WIP tag.
+> Can be set to 0 or 1. Default is 1.
+
+#### mogh.wip.secure-commit
+To enable or disable the prevention of commit when previous commit is a WIP.
+This flag is to keep the history clean of WIP commits.
 > Can be set to 0 or 1. Default is 1.
 
 ## 🤝 Contributing
