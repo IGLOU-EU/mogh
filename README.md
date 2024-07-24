@@ -13,14 +13,14 @@ The reason of this project, is that some Git Hooks usually have no interest in b
 - [ ] BSD (need to validate posix compatibility)
 
 ## 🧪 Features
-- [x] Can be configured with `git config` globally or locally
+- [x] Can be configured with `git config` globally or locally [see configuration](#-configuration)
 - [x] Colored Error and Success message output
 - [x] Unit testing for each hook
-- [x] emoji type support (can be disabled)
+- [x] emoji type support for commit message
 - [x] Check and Auto-fix commit message format
 - [x] Check and Auto signoff when missing if required
 - [ ] Check and Auto pgp singing when missing if required
-- [ ] Avoid duplicate commits
+- [ ] Avoid duplicate commits message
 - [x] Avoid to commit binary files with auto or interactive fix
 - [x] Avoid to commit large files with auto or interactive fix
 - [x] Support of DNCT (Do Not Commit This) tags in files
@@ -30,6 +30,9 @@ The reason of this project, is that some Git Hooks usually have no interest in b
 - [x] Prevent commit when previous commit is a WIP
 - [x] Require a .gitignore file to be present in the root of the repository
 - [ ] Emit a warning if potential sensitive information is found in a file
+- [ ] Branch naming convention
+- [ ] Branch protection rules
+- [ ] Enforce --force-with-lease instead of --force
 
 ## 💻 Usage
 These scripts are automatically used by Git according to the actions taken,
