@@ -11,24 +11,24 @@ readonly FAILURE=1
 
 # [HOOKS]
 ## HOOKS_ENABLED is a boolean value to enable or disable hooks
-HOOKS_ENABLED="$(git config --int --get mogh.enabled || echo $TRUE)"
+HOOKS_ENABLED="$(git config --type=int --get mogh.enabled || echo $TRUE)"
 
 ## GITIGNORE_REQUIRED is a boolean value to enable or disable gitignore
-GITIGNORE_REQUIRED="$(git config --int --get mogh.gitignore || echo $TRUE)"
+GITIGNORE_REQUIRED="$(git config --type=int --get mogh.gitignore || echo $TRUE)"
 
 # [GPG]
 ## GPG_REQUIRED is a flag that will force user to use git `-S, --gpg-sign`
-GPG_REQUIRED="$(git config --int --get mogh.gpg.required || echo $TRUE)"
+GPG_REQUIRED="$(git config --type=int --get mogh.gpg.required || echo $TRUE)"
 
 ## GPG_AUTOFIX is a flag that will try to automatically fix the gpg signature
-GPG_AUTOFIX="$(git config --int --get mogh.gpg.autofix || echo $TRUE)"
+GPG_AUTOFIX="$(git config --type=int --get mogh.gpg.autofix || echo $TRUE)"
 
 # [HEADER]
 ## HEADER_AUTOFIX is a flag that will try to automatically fix the header
-HEADER_AUTOFIX="$(git config --int --get mogh.header.autofix || echo $TRUE)"
+HEADER_AUTOFIX="$(git config --type=int --get mogh.header.autofix || echo $TRUE)"
 
 ## HEADER_MAX_LENGTH is a maximum length for the header
-HEADER_MAX_LENGTH="$(git config --int --get mogh.header.max-length || echo 80)"
+HEADER_MAX_LENGTH="$(git config --type=int --get mogh.header.max-length || echo 80)"
 
 # [TYPES]
 # TYPE_EXTRA is an array to add extra commit type
@@ -37,7 +37,7 @@ TYPE_EXTRA=($(git config --get-all mogh.types.extra))
 
 # TYPE_TO_EMOJI is a flag to enable or disable the emoji
 # 0: disable; 1: enable; 2: enable but keep the type
-TYPE_TO_EMOJI="$(git config --int --get mogh.types.emoji || echo $SUPERPOSITION)"
+TYPE_TO_EMOJI="$(git config --type=int --get mogh.types.emoji || echo $SUPERPOSITION)"
 
 # TYPE_EXTRA_EMOJI is an array to add extra emoji commit type
 # to mapping the commit type to emoji, the position id in the array is used
@@ -46,14 +46,14 @@ TYPE_EXTRA_EMOJI=($(git config --get-all mogh.types.extra-emoji))
 
 # [SIGNOFF]
 ## SIGNOFF_REQUIRED is a flag that will force user to use git `-s, --signoff`
-SIGNOFF_REQUIRED="$(git config --int --get mogh.signoff.required || echo $TRUE)"
+SIGNOFF_REQUIRED="$(git config --type=int --get mogh.signoff.required || echo $TRUE)"
 
 ## SIGNOFF_AUTOFIX is a flag that will try to automatically fix the signoff
-SIGNOFF_AUTOFIX="$(git config --int --get mogh.signoff.autofix || echo $TRUE)"
+SIGNOFF_AUTOFIX="$(git config --type=int --get mogh.signoff.autofix || echo $TRUE)"
 
 # [DNCT]
 ## DNCT_SUPPORT is a boolean value to enable or disable DNCT support
-DNCT_SUPPORT="$(git config --int --get mogh.dnct.enabled || echo $TRUE)"
+DNCT_SUPPORT="$(git config --type=int --get mogh.dnct.enabled || echo $TRUE)"
 
 ## DNCT_REGEX is a regex to match DNCT in commit files
 DNCT_REGEX="$(git config --get mogh.dnct.regex ||
@@ -61,23 +61,23 @@ echo '\[DNCT\]|DONOTCOMMITTHIS|DO-NOT-COMMIT-THIS|DO_NOT_COMMIT_THIS|DO NOT COMM
 
 # [FILES]
 ## FILE_UNCACHE_DSSTORE is a flag to ignore .DS_Store files
-FILE_UNCACHE_DSSTORE="$(git config --int --get mogh.files.uncache-dsstore || echo $TRUE)"
+FILE_UNCACHE_DSSTORE="$(git config --type=int --get mogh.files.uncache-dsstore || echo $TRUE)"
 
 ## FILE_UNCACHE_BINARY is a flag to ignore executable binary files
 # 0: disable; 1: enable; 2: manual decision
-FILE_UNCACHE_BINARY="$(git config --int --get mogh.files.uncache-binary || echo $SUPERPOSITION)"
+FILE_UNCACHE_BINARY="$(git config --type=int --get mogh.files.uncache-binary || echo $SUPERPOSITION)"
 
 ## FILE_MAX_SIZE is a maximum size for a file 
 ## size in KB (1024 bytes), 0 to disable and by default is 1024 (1MB)
-FILE_MAX_SIZE="$(git config --int --get mogh.files.size-max || echo 1024)"
+FILE_MAX_SIZE="$(git config --type=int --get mogh.files.size-max || echo 1024)"
 
 ## FILE_UNCACHE_OVERSIZE is a flag to automatically fix files with size > FILE_MAX_SIZE
 # 0: disable; 1: enable; 2: manual decision
-FILE_UNCACHE_OVERSIZE="$(git config --int --get mogh.files.uncache-oversize || echo $SUPERPOSITION)"
+FILE_UNCACHE_OVERSIZE="$(git config --type=int --get mogh.files.uncache-oversize || echo $SUPERPOSITION)"
 
 # [WIP]
 ## WIP_PREVENT_PUSH is a flag to prevent to push WIP commits
-WIP_PREVENT_PUSH="$(git config --int --get mogh.wip.prevent-push || echo $TRUE)"
+WIP_PREVENT_PUSH="$(git config --type=int --get mogh.wip.prevent-push || echo $TRUE)"
 
 ## WIP_SECURE_COMMIT is a flag to prevent commit when previous commit is a WIP
-WIP_SECURE_COMMIT="$(git config --int --get mogh.wip.secure-commit || echo $TRUE)"
+WIP_SECURE_COMMIT="$(git config --type=int --get mogh.wip.secure-commit || echo $TRUE)"
