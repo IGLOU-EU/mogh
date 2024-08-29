@@ -4,8 +4,8 @@
 # commits and branches to block the push if needed.
 
 # source config and common file
-source "${0%/*}/components/config"
-source "${0%/*}/components/common"
+source "./components/config"
+source "./components/common"
 
 # prevent_wip is a function to prevent the push of WIP commits
 prevent_wip() {
@@ -38,6 +38,43 @@ prevent_wip() {
     return $SUCCESS
 }
 
+# secure_branch_push is a function to check if the branch is protected
+secure_branch_push() {
+    # check if this flag is disabled
+    if [[ $BRANCH_PROTECTED_PUSH -eq $FALSE ]]; then
+        warning "Protecting branch are not enabled to prevent pushing by mistake 😱"
+        return $SUCCESS
+    fi
+
+    # check argument
+    if [[ $# -ne 1 ]]; then
+        error "secure_branch_push function require one argument"
+        return $FAILURE
+    fi
+
+    local _branch="$1"
+
+    # check if the branch name is empty
+    if [[ -z "$_branch" ]]; then
+        warning "Branch name is empty, that's strange 🤔"
+        return $SUCCESS
+    fi
+
+    # check if there is a regex to match the branch name
+    if [[ -z "$BRANCH_PROTECTED_NAME" ]]; then
+        info "No regex to match a protected branch name"
+        return $SUCCESS
+    fi
+
+    # check if the branch regex match the branch name
+    if grep -q -E "$BRANCH_PROTECTED_NAME" <<< "$_branch"; then
+        error "Pushing on protected branch '$_branch' is not allowed"
+        return $FAILURE
+    fi
+
+    return $SUCCESS
+}
+
 ## MAIN
 # do not execute if this script is sourced required for unit testing
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
@@ -63,6 +100,13 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
     if ! prevent_wip; then
         exit $FAILURE
     fi
+
+    # Check if the branch is protected
+    for ref in "${remote_ref[@]}"; do
+        if ! secure_branch_push "$ref"; then
+            exit $FAILURE
+        fi
+    done
 
     exit $SUCCESS
 fi

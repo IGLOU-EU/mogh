@@ -31,7 +31,7 @@ The reason of this project, is that some Git Hooks usually have no interest in b
 - [x] Require a .gitignore file to be present in the root of the repository
 - [ ] Emit a warning if potential sensitive information is found in a file
 - [ ] Branch naming convention
-- [ ] Branch protection rules
+- [x] Branch protection rules
 - [ ] Enforce --force-with-lease instead of --force
 
 ## 💻 Usage
@@ -153,6 +153,10 @@ This is the `git config` representation of how the default MOGH configuration ap
 [mogh "wip"]
 	prevent-push = 1
 	secure-commit = 1
+[mogh "branch"]
+	protected = 0
+	protected-push = 0
+	protected-name = "main|master"
 ```
 
 ### Detailed config 📑
@@ -254,9 +258,26 @@ This flag will prevent the push of a commit with the WIP tag.
 > Can be set to 0 or 1. Default is 1.
 
 #### mogh.wip.secure-commit
-To enable or disable the prevention of commit when previous commit is a WIP.
+To enable or disable the prevention of commit when previous commit is a WIP.   
 This flag is to keep the history clean of WIP commits.
 > Can be set to 0 or 1. Default is 1.
+
+#### mogh.branch.protected
+To enable or disable the branch protection.   
+This flag will prevent the commit on a protected branch.   
+Particularly useful when your distante repository not support branch protection.
+> Can be set to 0 or 1. Default is 0.
+
+#### mogh.branch.protected-push
+To enable or disable the branch protection push.   
+This usefull to prevent allowing or not independently of commiting on a protected branch.
+> Can be set to 0 or 1. Default is 0.   
+> _**Note:** By default, this flag is set to the value of `mogh.branch.protected`._
+
+#### mogh.branch.protected-name
+To define a regex to match with the branches you wish to protect.   
+Example: `release\/[0-9]+\.[0-9]+` will protect all branches like `release/1.0`, `release/2.0`, etc.
+> Default is `main|master`.
 
 ## 🤝 Contributing
 For contribute to this project, follow these steps:

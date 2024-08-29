@@ -574,10 +574,10 @@ test-check_size() {
 ERRORS=0
 
 # need to test
-test-check_dnct || ERRORS=$((ERRORS + $?))
+test-check_dnct    || ERRORS=$((ERRORS + $?))
 test-check_dsstore || ERRORS=$((ERRORS + $?))
-test-check_binary || ERRORS=$((ERRORS + $?))
-test-check_size || ERRORS=$((ERRORS + $?))
+test-check_binary  || ERRORS=$((ERRORS + $?))
+test-check_size    || ERRORS=$((ERRORS + $?))
 
 # print the number of errors
 if [[ $ERRORS -eq 0 ]]; then

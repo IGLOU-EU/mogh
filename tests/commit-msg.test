@@ -450,11 +450,11 @@ test-emoji_me() {
 # errors counter
 ERRORS=0
 
-# test-emoji_me
+# need to test
 test-format_checker || ERRORS=$((ERRORS + $?))
-test-format_header || ERRORS=$((ERRORS + $?))
-test-format_footer || ERRORS=$((ERRORS + $?))
-test-emoji_me || ERRORS=$((ERRORS + $?))
+test-format_header  || ERRORS=$((ERRORS + $?))
+test-format_footer  || ERRORS=$((ERRORS + $?))
+test-emoji_me       || ERRORS=$((ERRORS + $?))
 
 # print the number of errors
 if [[ $ERRORS -eq 0 ]]; then

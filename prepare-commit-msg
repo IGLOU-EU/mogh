@@ -7,7 +7,7 @@
 source "./components/config"
 source "./components/common"
 
-## is_new is a function to check if the current commit is an amend
+# is_new is a function to check if the current commit is an amend
 is_new() {
     # check if the argument is provided
     if [[ $# -ne 1 ]]; then
@@ -25,7 +25,7 @@ is_new() {
     return $FAILURE
 }
 
-## secure_wip is a function to check if the previous commit is a WIP
+# secure_wip is a function to check if the previous commit is a WIP
 secure_wip() {
     # check if this flag is disabled
     if [[ $WIP_SECURE_COMMIT -eq $FALSE ]]; then
@@ -57,6 +57,43 @@ secure_wip() {
     return $SUCCESS 
 }
 
+# secure_branch is a function to check if the branch is protected
+secure_branch() {
+    # check if this flag is disabled
+    if [[ $BRANCH_PROTECTED -eq $FALSE ]]; then
+        warning "Protecting branch are not enabled to prevent commit mistake 😱"
+        return $SUCCESS
+    fi
+
+    # check argument
+    if [[ $# -ne 1 ]]; then
+        error "secure_branch function require one argument"
+        return $FAILURE
+    fi
+
+    local _branch="$1"
+
+    # check if the branch name is empty
+    if [[ -z "$_branch" ]]; then
+        warning "Branch name is empty, that's strange 🤔"
+        return $SUCCESS
+    fi
+
+    # check if there is a regex to match the branch name
+    if [[ -z "$BRANCH_PROTECTED_NAME" ]]; then
+        info "No regex to match a protected branch name"
+        return $SUCCESS
+    fi
+
+    # check if the branch regex match the branch name
+    if grep -q -E "$BRANCH_PROTECTED_NAME" <<< "$_branch"; then
+        error "Pushing on protected branch '$_branch' is not allowed"
+        return $FAILURE
+    fi
+
+    return $SUCCESS
+}
+
 ## MAIN
 # do not execute if this script is sourced required for unit testing
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
@@ -71,6 +108,11 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
 
     # check if the previous commit is a WIP
     if ! secure_wip "$SHA1" "$(git log -1 --pretty=%s)"; then
+        exit $FAILURE
+    fi
+
+    # check if the branch is protected
+    if ! secure_branch "$(git branch --show-current)"; then
         exit $FAILURE
     fi
 

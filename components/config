@@ -81,3 +81,13 @@ WIP_PREVENT_PUSH="$(git config --type=int --get mogh.wip.prevent-push || echo $T
 
 ## WIP_SECURE_COMMIT is a flag to prevent commit when previous commit is a WIP
 WIP_SECURE_COMMIT="$(git config --type=int --get mogh.wip.secure-commit || echo $TRUE)"
+
+# [BRANCH]
+## BRANCH_PROTECTED is a flag to protect the main branch from commit
+BRANCH_PROTECTED="$(git config --type=int --get mogh.branch.protected || echo $FALSE)"
+
+## BRANCH_PROTECTED_PUSH is a flag to prevent to push on the main branch
+BRANCH_PROTECTED_PUSH="$(git config --type=int --get mogh.branch.protected-push || echo $BRANCH_PROTECTED)"
+
+## BRANCH_PROTECTED_NAME is a regex to match branch name we want to protect
+BRANCH_PROTECTED_NAME="$(git config --get mogh.branch.protected-name || echo 'main|master')"

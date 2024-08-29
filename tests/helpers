@@ -65,5 +65,6 @@ then_case() {
     warning "> Expected: $3"
     warning "> Status: $4"
     warning "> Expected status: $5"
+    
     return "$FAILURE"
 }
