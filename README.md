@@ -1,10 +1,14 @@
 # [1.0.0] 🏗️ MOGH - The Magic Of Git Hooks
-_Configurable UTF-8 git hooks templates without bullshit_
+_Easily configurable git hooks templates without bullshit_
 
-[![Pull request are open](https://img.shields.io/badge/Pull_request-Open-green.svg?style=flat-square)](https://github.com/IGLOU-EU/mogh/fork)
-[![License: GPL 3.0](https://img.shields.io/badge/License-GPL_3.0_or_later-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![Keep it simple, stupid](https://img.shields.io/badge/KISS-Powered-brightgreen?style=flat-square)](#)
+[![Pull request are open](https://img.shields.io/badge/Pull_request-Open-green?style=flat-square)](https://github.com/IGLOU-EU/mogh/fork)
+[![License: GPL 3.0](https://img.shields.io/badge/License-GPL_3.0_or_later-blue?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![Made with fun](https://img.shields.io/badge/Made_with-Fun_%F0%9F%98%B8-ff69b4?style=flat-square)](#)
 
-The reason of this project, is that some Git Hooks usually have no interest in being checked out AFTER a push (like with github actions). Checking the format, preventing the commit of certain information or files, etc. All this stuff should be checked locally to prevent mistake and leave no trace of it in the history.
+The reason of this project, is that some Git Hooks usually have no interest in being checked out AFTER a push (like with github actions). Checking the format, preventing the commit of certain information or files, etc. All this stuff should be checked locally to prevent mistake and leave no trace of it in the history. 
+
+This type of tool already exists, but it's extremely heavy and has many dependencies (like with npm, python, etc.). This is not the case here, it's just bash script that uses the default tools of a Unix like system and to be easily configurable with the git config command.
 
 ## 🧠 Systems supported
 - [x] Gnu/Linux
