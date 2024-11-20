@@ -54,13 +54,13 @@ secure_wip() {
     fi
 
     # check if the previous commit is a WIP
-    if grep -q -Ei 'WIP ?(\([^)]\) ?)?:' <<< "$_message"; then
+    if grep -q -Ei 'WIP ?(\([^)]\) ?)?:' <<<"$_message"; then
         error "Previous commit is a WIP, please fix it before new commit"
         error "$_message"
         return $FAILURE
     fi
 
-    return $SUCCESS 
+    return $SUCCESS
 }
 
 # secure_branch is a function to check if the branch is protected
@@ -92,7 +92,7 @@ secure_branch() {
     fi
 
     # check if the branch regex match the branch name
-    if grep -q -E "$BRANCH_PROTECTED_NAME" <<< "$_branch"; then
+    if grep -q -E "$BRANCH_PROTECTED_NAME" <<<"$_branch"; then
         error "Pushing on protected branch '$_branch' is not allowed"
         return $FAILURE
     fi

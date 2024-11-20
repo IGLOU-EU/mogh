@@ -47,7 +47,7 @@ check_dnct() {
     # check if the commit message has the DNCT tag
     if [[ -n $_spoted ]]; then
         error "DNCT tag are spoted in commit, see files below to fix it:"
-        
+
         for _file in $_spoted; do
             warning "-> $_file"
         done
@@ -101,15 +101,15 @@ check_binary() {
     fi
 
     case $FILE_UNCACHE_BINARY in
-        "$TRUE")
-            git_uncache "$_file"
-            ;;
-        "$SUPERPOSITION")
-            interactive_uncache "Executable binary" "$_file"
-            ;;
-        *)
-            return $SUCCESS
-            ;;
+    "$TRUE")
+        git_uncache "$_file"
+        ;;
+    "$SUPERPOSITION")
+        interactive_uncache "Executable binary" "$_file"
+        ;;
+    *)
+        return $SUCCESS
+        ;;
     esac
 
     return $FAILURE
@@ -142,17 +142,17 @@ check_size() {
     fi
 
     case $FILE_UNCACHE_OVERSIZE in
-        "$TRUE")
-            git_uncache "$_file" && return $SUCCESS
-            ;;
-        "$SUPERPOSITION")
-            interactive_uncache \
-                "${_size}KB exceeds limit of ${FILE_MAX_SIZE}KB for a" "$_file" \
-                && return $SUCCESS
-            ;;
-        *)
+    "$TRUE")
+        git_uncache "$_file" && return $SUCCESS
+        ;;
+    "$SUPERPOSITION")
+        interactive_uncache \
+            "${_size}KB exceeds limit of ${FILE_MAX_SIZE}KB for a" "$_file" &&
             return $SUCCESS
-            ;;
+        ;;
+    *)
+        return $SUCCESS
+        ;;
     esac
 
     return $FAILURE
@@ -163,10 +163,10 @@ check_size() {
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
     # check if a .gitignore exists
     if [[ $GITIGNORE_REQUIRED -eq $TRUE ]] && [[ ! -f .gitignore ]]; then
-        fatal 'To prevent unwanted files from being commited, a .gitignore'\
-              'file is required.\n> For disabling this check in the current'\
-              'repository, you can run the following command:\n>'\
-              'git config mogh.gitignore 0'
+        fatal 'To prevent unwanted files from being commited, a .gitignore' \
+            'file is required.\n> For disabling this check in the current' \
+            'repository, you can run the following command:\n>' \
+            'git config mogh.gitignore 0'
     fi
 
     # check if a modified or added file is tagged with DNCT
@@ -176,17 +176,17 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
 
     for _file in $(git diff --cached --name-only --diff-filter=ATM -p); do
         # check .ds_store file
-        if ! check_dsstore "$_file" ; then
+        if ! check_dsstore "$_file"; then
             continue
         fi
 
         # check binary file
-        if ! check_binary "$_file" ; then
+        if ! check_binary "$_file"; then
             continue
         fi
 
         # check file size
-        if ! check_size "$_file" ; then
+        if ! check_size "$_file"; then
             continue
         fi
     done

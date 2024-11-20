@@ -30,7 +30,7 @@ prevent_wip() {
         local _message
         _message="$(git log -1 --pretty=format:"%s" "$_commit")"
 
-        if grep -q -Ei 'WIP ?(\([^)]\) ?)?:' <<< "$_message"; then
+        if grep -q -Ei 'WIP ?(\([^)]\) ?)?:' <<<"$_message"; then
             warning "Commit '$_commit' is a WIP commit '$_message'"
             _as_wip=$TRUE
         fi
@@ -73,7 +73,7 @@ secure_branch_push() {
     fi
 
     # check if the branch regex match the branch name
-    if grep -q -E "$BRANCH_PROTECTED_NAME" <<< "$_branch"; then
+    if grep -q -E "$BRANCH_PROTECTED_NAME" <<<"$_branch"; then
         error "Pushing on protected branch '$_branch' is not allowed"
         return $FAILURE
     fi
@@ -88,10 +88,10 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
     null_hash=$(git hash-object --stdin </dev/null | tr '0-9a-f' '0')
 
     remote_name="$1" # Nom du dépôt distant
-    remote_url="$2" # URL du dépôt distant
+    remote_url="$2"  # URL du dépôt distant
 
-    local_ref=() # Local reference (branche) qui est poussée
-    local_oid=() # OID (hash) de la référence locale
+    local_ref=()  # Local reference (branche) qui est poussée
+    local_oid=()  # OID (hash) de la référence locale
     remote_ref=() # Référence (branche) distante
     remote_oid=() # OID (hash) de la référence distante
 
