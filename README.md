@@ -10,10 +10,16 @@ The reason of this project, is that some Git Hooks usually have no interest in b
 
 This type of tool already exists, but it's extremely heavy and has many dependencies (like with npm, python, etc.). This is not the case here, it's just bash script that uses the default tools of a Unix like system and to be easily configurable with the git config command.
 
+## ✨ I wish
+- To finish Features implementations
+- A gitlab job to run unit test
+- To testing supported systems
+- A Documentation review
+
 ## 🧠 Systems supported
 - [x] Gnu/Linux
 - [ ] Windows
-- [ ] macOS
+- [ ] macOS (not tested)
 - [ ] BSD (need to validate posix compatibility)
 
 ## 🧪 Features
@@ -48,7 +54,7 @@ Like this:
 git config mogh.enabled 0
 ```
 
-Or you can skip it one with the git `--no-verify` flag for push actions.
+Or you can skip it one time with the git `--no-verify` flag for push actions.
 
 ## 📦 Dependencies
 To work properly, these scripts don't require any exta dumb tools like npm,
