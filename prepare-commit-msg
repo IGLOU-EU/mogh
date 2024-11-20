@@ -3,9 +3,15 @@
 # This script is used by the prepare-commit-msg hook to check the commit itself
 # and prevent some mistakes. To commit message formater, check commit-msg hook.
 
-# source config and common file
-source "./components/config"
-source "./components/common"
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # source config and common file
+    source "./components/config"
+    source "./components/common"
+else
+    # source from unit test
+    source "${0%/*}/components/config"
+    source "${0%/*}/components/common"
+fi
 
 # is_new is a function to check if the current commit is an amend
 is_new() {

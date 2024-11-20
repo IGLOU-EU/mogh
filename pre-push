@@ -3,9 +3,15 @@
 # This script is used by the pre-push hook to check the pushed
 # commits and branches to block the push if needed.
 
-# source config and common file
-source "./components/config"
-source "./components/common"
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # source config and common file
+    source "./components/config"
+    source "./components/common"
+else
+    # source from unit test
+    source "${0%/*}/components/config"
+    source "${0%/*}/components/common"
+fi
 
 # prevent_wip is a function to prevent the push of WIP commits
 prevent_wip() {

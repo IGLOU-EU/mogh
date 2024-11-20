@@ -13,9 +13,15 @@
 # [footer(s)]
 # (* && Signed-off-by: <name> <email>)
 
-# source config and common file
-source "./components/config"
-source "./components/common"
+if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
+    # source config and common file
+    source "./components/config"
+    source "./components/common"
+else
+    # source from unit test
+    source "${0%/*}/components/config"
+    source "${0%/*}/components/common"
+fi
 
 # shellcheck disable=SC2206
 ## CM_TYPE is an array of commit message type,
