@@ -7,7 +7,7 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 # init var path
-INSTALL_PATH="$(git config init.templatedir)/hooks"
+INSTALL_PATH="$(realpath "$(git config init.templatedir | sed "s|^~|$HOME|")")/hooks"
 
 # check if the install path exists
 if [[ ! -d $INSTALL_PATH ]]; then
@@ -16,8 +16,8 @@ if [[ ! -d $INSTALL_PATH ]]; then
 fi
 
 # update the hooks
-git -C ~/.gittemplates/hooks pull || {
-    echo "[ERROR] Failed to update the hooks" >&2
+git -C "$INSTALL_PATH" pull || {
+    echo "[ERROR] Failed to update the hooks into: $INSTALL_PATH" >&2
     exit 1
 }
 
