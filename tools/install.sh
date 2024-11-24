@@ -37,8 +37,20 @@ mkdir -p "$INSTALL_PATH" || {
 
 # clone to the install path
 echo "[INFO] Cloning to the install path"
-git clone "$GIT_REPO" "$INSTALL_PATH" > /dev/null || {
+git clone --branch main --single-branch --depth 1 "$GIT_REPO" "$INSTALL_PATH" > /dev/null || {
     echo "[ERROR] Failed to clone to the install path" >&2
+    exit 1
+}
+
+git -C "$INSTALL_PATH" fetch --tags || {
+    echo "[ERROR] Can't fetch tags at: $INSTALL_PATH" >&2
+    exit 1
+}
+
+LATEST_TAG="$(git -C "$INSTALL_PATH" describe --tags "$(git -C "$INSTALL_PATH" rev-list --tags --max-count=1)")"
+echo "[INFO] Moving to the latest tag $LATEST_TAG"
+git -C "$INSTALL_PATH" reset --hard "$LATEST_TAG" > /dev/null || {
+    echo "[ERROR] Failed to move to tag $LATEST_TAG" >&2
     exit 1
 }
 
