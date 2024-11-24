@@ -16,7 +16,12 @@ if [[ ! -d $INSTALL_PATH ]]; then
 fi
 
 # update the hooks
-git -C "$INSTALL_PATH" pull || {
+git -C "$INSTALL_PATH" fetch --tags || {
+    echo "[ERROR] Can't fetch tags at: $INSTALL_PATH" >&2
+    exit 1
+}
+
+git -C "$INSTALL_PATH" reset --hard "$(git -C "$INSTALL_PATH" describe --tags "$(git -C "$INSTALL_PATH" rev-list --tags --max-count=1)")" || {
     echo "[ERROR] Failed to update the hooks into: $INSTALL_PATH" >&2
     exit 1
 }
