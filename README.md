@@ -105,6 +105,18 @@ According to the [documentation](https://git-scm.com/docs/git-init/en),
 this can update repository.
 > Create an empty Git repository **OR** reinitialize an existing one
 
+### Uninstall 🗑️
+To update it, run the following command:
+WARNING: There use an `rm -rf`, check the path if you're not sure !
+```bash
+templatedir="$(git config init.templatedir)" // find the install folder
+rm -rf "$templatedir" // remove it
+```
+Every local git repos keep their git hooks. Git init make a copy of hooks, not a link. 
+So you have two choices :
+- Removing manually `.git/hooks` for every local repos
+- Disable MOGH to prevent any execution `git config --global mogh.enabled 0`
+
 ## 📝 Configuration
 The configuration use the default git config file, so you can change it with 
 the git command `git config`. By default, the configuration is applied only to
