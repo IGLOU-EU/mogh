@@ -15,12 +15,12 @@
 
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
     # source config and common file
-    source "./components/config"
-    source "./components/common"
-else
-    # source from unit test
     source "${0%/*}/components/config"
     source "${0%/*}/components/common"
+else
+    # source from unit test
+    source "./components/config"
+    source "./components/common"
 fi
 
 # shellcheck disable=SC2206

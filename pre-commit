@@ -3,15 +3,14 @@
 # This script is used by the pre-commit hook to check the commited
 # files and auto or manual fixit it if needed.
 
-# source config and common file
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
     # source config and common file
-    source "./components/config"
-    source "./components/common"
-else
-    # source from unit test
     source "${0%/*}/components/config"
     source "${0%/*}/components/common"
+else
+    # source from unit test
+    source "./components/config"
+    source "./components/common"
 fi
 
 ## EXEC_BIN is an array of executable binary format

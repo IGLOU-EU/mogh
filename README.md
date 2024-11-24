@@ -1,4 +1,4 @@
-# [1.1.0] 🏗️ MOGH - The Magic Of Git Hooks
+# [1.1.1] 🏗️ MOGH - The Magic Of Git Hooks
 _Easily configurable git hooks templates without bullshit_
 
 [![Keep it simple, stupid](https://img.shields.io/badge/KISS-Powered-brightgreen?style=flat-square)](#)
