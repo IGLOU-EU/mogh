@@ -73,7 +73,7 @@ python or other crap. Requirements are probably by default on your system.
 ## 📥 Installation
 To install it, just run the following command:
 ```bash
-curl -sL https://raw.githubusercontent.com/IGLOU-EU/mogh/master/tools/install.sh | bash
+curl -sL https://gitlab.com/adrienK/mogh/-/raw/main/tools/install.sh | bash
 ```
 
 That will clone the repository to your git templates directory and
@@ -84,14 +84,14 @@ it will not be overwritten but moved to `hooks.old`.
 Or you can install it manually by running something like this:
 ```bash
 mkdir -p ~/.git/templates
-git clone https://github.com/IGLOU-EU/mogh.git ~/.git/templates/hooks
+git clone https://gitlab.com/adrienK/mogh.git ~/.git/templates/hooks
 git config --global init.templatedir ~/.git/templates
 ```
 
 ### Update ♻️
 To update it, just run the following command:
 ```bash
-curl -sL https://raw.githubusercontent.com/IGLOU-EU/mogh/master/tools/update.sh | bash
+curl -sL https://gitlab.com/adrienK/mogh/-/raw/main/tools/update.sh | bash
 ```
 That will globally made an `git pull` to the repository to update the templates.
 If the repository is not cloned yet, it returns an error.

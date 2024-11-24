@@ -7,7 +7,7 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 # init var path
-GIT_REPO="https://github.com/IGLOU-EU/mogh.git"
+GIT_REPO="https://gitlab.com/adrienK/mogh.git"
 INSTALL_PATH="$(git config init.templatedir)"
 TEMPLATE_PATH=""
 
