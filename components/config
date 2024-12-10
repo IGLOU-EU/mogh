@@ -17,10 +17,12 @@ HOOKS_ENABLED="$(git config --type=int --get mogh.enabled || echo $TRUE)"
 GITIGNORE_REQUIRED="$(git config --type=int --get mogh.gitignore || echo $TRUE)"
 
 # [GPG]
-## GPG_REQUIRED is a flag that will force user to use git `-S, --gpg-sign`
+## GPG_REQUIRED is a flag that will force user to use GPG signing
+## 0: disable; 1: enable
 GPG_REQUIRED="$(git config --type=int --get mogh.gpg.required || echo $TRUE)"
 
-## GPG_AUTOFIX is a flag that will try to automatically fix the gpg signature
+## GPG_AUTOFIX is a flag that will try to automatically enable GPG signing
+## 0: disable; 1: enable
 GPG_AUTOFIX="$(git config --type=int --get mogh.gpg.autofix || echo $TRUE)"
 
 # [HEADER]

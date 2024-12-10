@@ -100,6 +100,63 @@ secure_branch() {
     return $SUCCESS
 }
 
+# secure_gpg is a function to check if the commit needs GPG signing
+secure_gpg() {
+    # check if this flag is disabled
+    if [[ $GPG_REQUIRED -eq $FALSE ]]; then
+        warning "GPG signing is not required 🔓"
+        return $SUCCESS
+    fi
+
+    # check argument
+    if [[ $# -ne 2 ]]; then
+        error "secure_branch_push function require one argument"
+        return $FAILURE
+    fi
+
+    local _gpgsign="$1"
+    local _signing_key="$2"
+
+    # Check if any GPG keys are available
+    if ! gpg --list-secret-keys --keyid-format LONG | grep -q "sec   " >/dev/null; then
+        error "No GPG keys found. To create one:"
+        error "1. gpg --full-generate-key"
+        error "2. Choose RSA and RSA (default)"
+        error "3. Keysize 4096 or bigger"
+        error "4. Set expiry (0 = no expiry)"
+        error "5. Fill in your user information"
+        return $FAILURE
+    fi
+
+    # Check if user.signingkey is configured
+    if [[ -z $_signing_key ]]; then
+        error "GPG signing key not configured. To set it:"
+        error "1. List your keys: gpg --list-secret-keys --keyid-format LONG"
+        error "2. Copy your key ID (after sec   rsa4096/ for example)"
+        error "3. Run: git config --global user.signingkey YOUR_KEY_ID"
+
+        # Show available keys to help user
+        info "Available GPG keys:"
+        gpg --list-secret-keys --keyid-format LONG
+        return $FAILURE
+    fi
+
+    # check if commit signing is enabled
+    if [[ -z $_gpgsign ]]; then
+        if [[ $GPG_AUTOFIX -eq $TRUE ]]; then
+            info "Auto enabling GPG signing for this repository 🔐"
+            git config commit.gpgsign true
+            return $SUCCESS
+        fi
+
+        error "GPG signing is required but not enabled"
+        error "Run: 'git config commit.gpgsign true' to enable it"
+        return $FAILURE
+    fi
+
+    return $SUCCESS
+}
+
 ## MAIN
 # do not execute if this script is sourced required for unit testing
 if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
@@ -111,6 +168,17 @@ if [[ ${BASH_SOURCE[0]} -ef "$0" ]]; then
 
     # SHA1 of the commit (empty if it is a new commit)
     SHA1="$3"
+
+    # get the gpgsign flag
+    _gpgsign=$(git config --get user.signingkey 2>/dev/null)
+
+    # get the user signing key
+    _signing_key=$(git config --get user.signingkey 2>/dev/null)
+
+    # check the PGP signature
+    if ! secure_gpg "$_gpgsign" "$_signing_key"; then
+        exit $FAILURE
+    fi
 
     # check if the previous commit is a WIP
     if ! secure_wip "$SHA1" "$(git log -1 --pretty=%s)"; then

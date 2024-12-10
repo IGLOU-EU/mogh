@@ -184,12 +184,142 @@ test-secure_branch() {
     return $_error
 }
 
+# test-secure_gpg test secure_gpg function
+test-secure_gpg() {
+    # set variables
+    local _name
+    local _enabled
+    local _autofix
+    local _expected
+    local _tmp_dir
+
+    local _error=$FALSE
+    local _result_status
+
+    # create temp directory for git testing
+    _tmp_dir=$(tmp_dir)
+
+    # initialize git repo in temp directory
+    git init "$_tmp_dir" >/dev/null 2>>"$LOG_FILE"
+    cd "$_tmp_dir" || exit
+
+    # set the test cases
+    cases='[
+        {
+            "name": "disabled",
+            "enabled": 0,
+            "autofix": 0,
+            "expected": 0,
+            "mock_gpgsign": "",
+            "mock_signing_key": ""
+        },
+        {
+            "name": "enabled but no gpg keys",
+            "enabled": 1,
+            "autofix": 0,
+            "expected": 1,
+            "mock_gpgsign": "",
+            "mock_signing_key": ""
+        },
+        {
+            "name": "enabled with gpg keys but no signing key",
+            "enabled": 1,
+            "autofix": 0,
+            "expected": 1,
+            "mock_gpg": "success",
+            "mock_gpgsign": "",
+            "mock_signing_key": ""
+        },
+        {
+            "name": "enabled with signing key but no commit signing no autofix",
+            "enabled": 1,
+            "autofix": 0,
+            "expected": 1,
+            "mock_gpg": "success",
+            "mock_gpgsign": "",
+            "mock_signing_key": "TEST_KEY"
+        },
+        {
+            "name": "enabled with signing key but no commit signing with autofix",
+            "enabled": 1,
+            "autofix": 1,
+            "expected": 0,
+            "mock_gpg": "success",
+            "mock_gpgsign": "",
+            "mock_signing_key": "TEST_KEY"
+        },
+        {
+            "name": "enabled with signing key and autofix",
+            "enabled": 1,
+            "autofix": 1,
+            "expected": 0,
+            "mock_gpg": "success",
+            "mock_gpgsign": "1",
+            "mock_signing_key": "TEST_KEY"
+        }
+    ]'
+
+    for c in $(range_cases "$cases"); do
+        # given case data
+        _name="$(get_data "$c" name)"
+        _enabled="$(get_data "$c" enabled)"
+        _autofix="$(get_data "$c" autofix)"
+        _expected="$(get_data "$c" expected)"
+        _mock_gpg="$(get_data "$c" "mock_gpg")"
+        _mock_gpgsign="$(get_data "$c" "mock_gpgsign")"
+        _mock_signing_key="$(get_data "$c" "mock_signing_key")"
+
+        # write name to log file
+        init_case "$_name"
+
+        # set local config
+        GPG_REQUIRED=$_enabled
+        GPG_AUTOFIX=$_autofix
+
+        # Mock gpg command behavior
+        if [[ "$_mock_gpg" == "success" ]]; then
+            # Mock successful GPG key check
+            function gpg() {
+                return 0
+            }
+        else
+            # Mock failed GPG key check
+            function gpg() {
+                return 1
+            }
+        fi
+
+        # when test it
+        _result_status=$FAILURE
+        secure_gpg "$_mock_gpgsign" "$_mock_signing_key" 2>>"$LOG_FILE" && _result_status=$SUCCESS
+
+        # process the result
+        then_case "$_name" "_" "_" "$_result_status" "$_expected" || _error=$((_error + 1))
+
+        # Clean up mocks
+        unset -f gpg
+    done
+
+    # cleanup
+    cd - >/dev/null || exit
+    tmp_rm "$_tmp_dir"
+
+    # return the number of errors
+    return $_error
+}
+
 # errors counter
 ERRORS=0
 
 # need to test
-test-secure_wip    || ERRORS=$((ERRORS + $?))
-test-secure_branch || ERRORS=$((ERRORS + $?))
+test-secure_wip
+(( ERRORS += $? ))
+
+test-secure_branch
+(( ERRORS += $? ))
+
+test-secure_gpg
+(( ERRORS += $? ))
 
 # print the number of errors
 if [[ $ERRORS -eq 0 ]]; then

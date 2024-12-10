@@ -29,7 +29,7 @@ This type of tool already exists, but it's extremely heavy and has many dependen
 - [x] emoji type support for commit message
 - [x] Check and Auto-fix commit message format
 - [x] Check and Auto signoff when missing if required
-- [ ] Check and Auto pgp singing when missing if required
+- [x] Check and Auto pgp singing when missing if required
 - [ ] Avoid duplicate commits message
 - [x] Avoid to commit binary files with auto or interactive fix
 - [x] Avoid to commit large files with auto or interactive fix
@@ -68,6 +68,7 @@ python or other crap. Requirements are probably by default on your system.
 - `stat` checking file size
 - `sed` parses and transforms text
 - `tr` operation of replacing or removing specific characters
+- `pgp` if you require a PGP signature
 - `jq` (only for unit testing) JSON processor
 
 ## 📥 Installation
