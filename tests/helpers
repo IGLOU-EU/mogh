@@ -10,16 +10,16 @@ range_cases() {
 
 # extract data from a case
 get_data() {
-    echo "$1" | base64 --decode | jq -r ".$2"
+    echo "$1" | base64 -d | jq -r ".$2"
 }
 
 # extract range data from a case
 get_range() {
-    echo "$1" | base64 --decode | jq -r ".$2[] | @base64"
+    echo "$1" | base64 -d | jq -r ".$2[] | @base64"
 }
 
 decode_data() {
-    echo "$1" | base64 --decode
+    echo "$1" | base64 -d
 }
 
 # init the case log
